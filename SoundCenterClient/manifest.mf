@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Created-By: WegFetZ
+Permissions: all-permissions
+Codebase: www.sound-center.com
+Application-Name: "Minecraft SoundCenter"
+Application-Library-Allowable-Codebase: www.sound-center.com/applets
+Caller-Allowable-Codebase: www.sound-center.com
+Specification-Vendor: WegFetZ
