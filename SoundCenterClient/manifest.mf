@@ -3,6 +3,6 @@ Created-By: WegFetZ
 Permissions: all-permissions
 Codebase: www.sound-center.com
 Application-Name: "Minecraft SoundCenter"
-Application-Library-Allowable-Codebase: www.sound-center.com/applets
+Application-Library-Allowable-Codebase: www.sound-center.com
 Caller-Allowable-Codebase: www.sound-center.com
 Specification-Vendor: WegFetZ
