@@ -170,7 +170,7 @@ public class TcpProtocol {
 
 				} else if (cmd == TcpOpcodes.CL_DATA_CMD_DELETE_SONG) {
 					Song song = (Song) packet.getKey();
-					Client.database.removeSong(song.getPath());
+					Client.database.removeSong(song.getPath(), true);
 					File file = new File(Applet.dataFolder + "musicdata" + File.separator + song.getPath());
 					if (file.exists()) {
 						file.delete();

@@ -231,7 +231,8 @@ public class Database implements Serializable{
 	}
 	
 	public void addSong(Song song) {
-		removeSong(song);
+		
+		removeSong(song.getPath(), false);		
 		
 		songs.put(song.getPath(), song);
 		DefaultListModel model = null;
@@ -248,15 +249,15 @@ public class Database implements Serializable{
 		updateMusicTab(song.getOwner(), model);
 	}
 	
-	public void removeSong(String path) {
+	public void removeSong(String path, boolean removeFromStations) {
 		Song song = songs.get(path);
 		if (song != null) {
-			removeSong(song);
+			removeSong(song, removeFromStations);
 		}
 	}
 	
-	private void removeSong(Song song) {
-
+	private void removeSong(Song song, boolean removeFromStations) {
+		
 		DefaultListModel model = null;
 		if (songModels.containsKey(song.getOwner())) {
 			model = songModels.get(song.getOwner());
@@ -265,7 +266,9 @@ public class Database implements Serializable{
 		
 		updateMusicTab(song.getOwner(), null);
 		
-		removeSongFromStations(song.getPath());
+		if (removeFromStations) {
+			removeSongFromStations(song.getPath());
+		}
 	}
 	
 	public void removeSongFromStations(String path) {
