@@ -62,7 +62,7 @@ public class GeneralTab extends JPanel {
 		serverAddressLabel.setPreferredSize(new Dimension(110, 30));
 		serverAddressField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 		
-		JLabel pluginPortLabel = new JLabel("CustomMusic Port:");
+		JLabel pluginPortLabel = new JLabel("SoundCenter Port:");
 		pluginPortLabel.setPreferredSize(new Dimension(110, 30));
 		pluginPortField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 		
