@@ -96,36 +96,61 @@ public class MidiPlayer extends PlayerController {
 	}
 
 	@Override
-	public void setVolume(int value, boolean fade) {
+	public void setVolume(int value, boolean allowFade) {
 		if (sequencer != null && sequencer.isOpen()) {
 			
 			//calculate value: f(x) = -0,0126x^2 + 2.53x 	(half range is 75% of volume)
 			final int vol = (int) (-0.0126*Math.pow(value, 2) + 2.53*value);
-			final ShortMessage volMessage = new ShortMessage();
 			
-			if (Math.abs(oldVolume - value) > 20) {
+			boolean fade = false;
+			if (allowFade && Math.abs(oldVolume - value) > 20) {
 				fade = true;
 			}
 			
 			if (fade) {
+				fadeVolume(value);
+			}
+			
+			sendVolumeMessage(new ShortMessage(), vol);
+			
+			oldVolume = vol;
+		}
+	}
+	
+	private void fadeVolume(final int newVolume) {
+		
+		Runnable fadeRunnable = new Runnable() {
+			@Override
+			public void run() {
 				fading = true;
-				if (oldVolume < vol) {
-					for (int i = oldVolume; i < (oldVolume-3); i=i+3) {
-						sendVolumeMessage(volMessage, vol);
+				
+				ShortMessage volMessage = new ShortMessage();
+				//increase
+				if (oldVolume < newVolume) {
+					for (int i = oldVolume; i < (oldVolume-1); i=i+1) {
+						int stepVol = (int) (-0.0126*Math.pow(i, 2) + 2.53*newVolume);
+						sendVolumeMessage(volMessage, stepVol);
 						try { Thread.sleep(10); } catch(InterruptedException e) {}
 					}
+					
+				//increase
 				} else {
-					for (int i = oldVolume; i > (oldVolume+3); i=i-3) {
-						sendVolumeMessage(volMessage, vol);
+					for (int i = oldVolume; i > (oldVolume+1); i=i-1) {
+						int stepVol = (int) (-0.0126*Math.pow(i, 2) + 2.53*newVolume);
+						sendVolumeMessage(volMessage, stepVol);
 						try { Thread.sleep(10); } catch(InterruptedException e) {}
 					}
 				}
+				
 				fading = false;
 			}
-			
-			sendVolumeMessage(volMessage, vol);
-			
-			oldVolume = vol;
+		};
+		
+		fading = true; // we need to set to true here already, else while loop won't run
+		volumeExecutor.execute(fadeRunnable);
+
+		while (fading) {
+			try { Thread.sleep(100); } catch(InterruptedException e) {}
 		}
 	}
 

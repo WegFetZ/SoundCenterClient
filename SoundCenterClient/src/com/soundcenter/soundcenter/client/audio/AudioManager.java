@@ -211,18 +211,10 @@ public class AudioManager {
 	}
 	
 	public void stopPlayer(final byte type, final short id) {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				PlayerController controller = getPlayer(type, id);
-				if (controller != null) {
-					controller.close();
-				}
-				if (type != GlobalConstants.TYPE_VOICE && type != GlobalConstants.TYPE_GLOBAL) {
-					sendStopCommand(type, id);
-				}
-			}
-		}).start();
+		PlayerController controller = getPlayer(type, id);
+		if (controller != null) {
+			controller.close();
+		}
 	}
 	
 	public void stopAll() {	
@@ -280,11 +272,11 @@ public class AudioManager {
 		}).start();
 	}
 	
-	private void sendStartCommand(byte type, short id) {
+	public void sendStartCommand(byte type, short id) {
 		Client.tcpClient.sendPacket(TcpOpcodes.SV_STREAM_CMD_START, type, id);
 	}
 	
-	private void sendStopCommand(byte type, short id) {
+	public void sendStopCommand(byte type, short id) {
 		Client.tcpClient.sendPacket(TcpOpcodes.SV_STREAM_CMD_STOP, type, id);
 	}
 	

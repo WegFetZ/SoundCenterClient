@@ -68,7 +68,7 @@ public class TcpProtocol {
 		} else if (!Client.initialized) {
 
 			if (cmd == TcpOpcodes.CL_CON_INFO_NOT_ONLINE) {
-				Applet.logger.i("Connection accepted! \nLog into Minecraft within 2minutes or use "
+				Applet.logger.i("Connection accepted! \nJoin the server within 2minutes or use "
 						+ "\"/sc init\" to initialize the client.", null);
 				return true;
 

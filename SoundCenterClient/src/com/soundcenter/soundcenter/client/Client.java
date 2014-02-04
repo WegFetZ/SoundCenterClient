@@ -115,7 +115,11 @@ public class Client {
 				Applet.logger.i("Reconnecting...", null);
 				GeneralTabActions.connectButtonPressed();
 				reconnectTries ++;
+				
+				return;
 			}
+			Applet.logger.i("Client will not reconnect", null);
 		}
+		
 	}
 }

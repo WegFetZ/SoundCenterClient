@@ -46,6 +46,7 @@ public class VoicePlayer extends PlayerController {
 				
 				byte[] decodedData = new byte[speexDecoder.getProcessedDataByteSize()];
 				speexDecoder.getProcessedData(decodedData, 0);
+				firstPacketReceived = true; //now we can start fading the volume
 				
 				line.write(decodedData, 0, decodedData.length);
 			} catch (StreamCorruptedException e) {

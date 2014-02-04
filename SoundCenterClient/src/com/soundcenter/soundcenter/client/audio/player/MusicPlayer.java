@@ -86,6 +86,7 @@ public class MusicPlayer extends PlayerController {
 		Applet.logger.d("MusicSession ID: " + playerId + " closed.", null);
 	}	
 	
+	//TODO fix exception on player reset
 	private void resetPlayer() {
 		player.stopPlayer();
 		player = new Player();
@@ -134,8 +135,10 @@ public class MusicPlayer extends PlayerController {
 		
 						byte[] data = new byte[bufferSize];
 						numBytesRead = decodedAudioStream.read(data, 0, data.length);
-						if (numBytesRead > 0 && data != null)
+						if (numBytesRead > 0 && data != null) {
+							firstPacketReceived();
 							line.write(data, 0, data.length);
+						}
 					}
 				}
 			} catch (LineUnavailableException e) {
@@ -159,7 +162,7 @@ public class MusicPlayer extends PlayerController {
 					decodedAudioStream.close();
 			} catch (IOException e) {}
 			
-			//Applet.logger.d("Song stopped/ finished at player " + id + ".", null);
+			//Applet.logger.d("Song stopped/ finished at player " + playerId + ".", null);
 		}
 		
 	

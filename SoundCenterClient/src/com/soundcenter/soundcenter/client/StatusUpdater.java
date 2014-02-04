@@ -83,7 +83,7 @@ public class StatusUpdater implements Runnable {
 			}
 			
 			long timeB = System.currentTimeMillis();
-			int delay = (33) - (int) (timeB - timeA);
+			int delay = (50) - (int) (timeB - timeA);
 			
 			if (delay < 0)
 				delay = 0;

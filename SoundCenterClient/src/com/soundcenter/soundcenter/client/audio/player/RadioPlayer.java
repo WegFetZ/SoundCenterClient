@@ -47,6 +47,7 @@ public class RadioPlayer extends PlayerController {
 
 					byte[] data = new byte[bufferSize];
 					numBytesRead = decodedAudioStream.read(data, 0, data.length);
+					firstPacketReceived = true; //now we can start fading the volume
 					if (numBytesRead > 0 && data != null)
 						line.write(data, 0, data.length);
 				}

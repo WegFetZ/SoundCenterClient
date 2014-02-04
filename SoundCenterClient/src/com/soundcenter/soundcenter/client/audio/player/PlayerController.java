@@ -1,15 +1,19 @@
 package com.soundcenter.soundcenter.client.audio.player;
 
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-
 import javax.sound.midi.Sequencer;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.SourceDataLine;
 
 import com.soundcenter.soundcenter.client.Applet;
 import com.soundcenter.soundcenter.client.Client;
+import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.data.Station;
 import com.soundcenter.soundcenter.lib.tcp.MidiNotificationPacket;
 import com.soundcenter.soundcenter.lib.udp.UdpPacket;
@@ -21,6 +25,8 @@ public class PlayerController extends Thread {
 	protected Station station = null;
 	protected int playerPriority = 1;
 	
+	protected boolean firstPacketReceived = false;
+	protected ExecutorService volumeExecutor = Executors.newFixedThreadPool(1);
 	protected boolean fading = false;
 	protected int oldVolume = 0;
 	
@@ -76,10 +82,6 @@ public class PlayerController extends Thread {
 		playerPriority = value;
 	}
 	
-	public boolean isFading() {
-		return fading;
-	}
-	
 	public boolean isActive() {
 		if (line != null) {
 			return line.isActive();
@@ -97,35 +99,77 @@ public class PlayerController extends Thread {
 	public void addToQueue(UdpPacket packet){
 		queue.add(packet);
 	}
+	
+	public int getVolume() {
+		return oldVolume;
+	}
 
-	public void setVolume(int value, boolean fade) {
-		if (volumeControl != null) {
-			final float valueDB = (float) (minGainDB + (1/cste)*Math.log(1+(Math.exp(cste*ampGainDB)-1)*(value/100.0f)));
+	public void setVolume(int value, boolean allowFade) {
+		// do not set the volume before the first packet was received
+		// this is to prevent the volume from fading in before anything is played		
+		if (volumeControl != null && !fading && firstPacketReceived) { 
 			
-			if (Math.abs(oldVolume - value) > 20) {
+			boolean fade = false;
+			if (allowFade && Math.abs(oldVolume - value) > 10) {
 				fade = true;
 			}
 			
 			if (fade) {
+				fadeVolume(oldVolume, value);
+			} else {
+			
+				float valueDB = (float) (minGainDB + (1/cste)*Math.log(1+(Math.exp(cste*ampGainDB)-1)*(value/100.0f)));
+				volumeControl.setValue(valueDB);
+			}
+			
+			oldVolume = value;
+		}
+	}
+	
+	private void fadeVolume(final int from, final int to) {
+		
+		if (volumeControl == null) {
+			return;
+		}
+		
+		Runnable fadeRunnable = new Runnable() {
+			@Override
+			public void run() {
 				fading = true;
-				//fade volume change
-				if (oldVolume < value) {
-					for (int i = oldVolume; i <= (value - 1); i= i+1) {
-						setVolume(i, false);
+
+				//increase
+				if (from < to) {
+					for (int i = from; i <= (to - 1); i= i+1) {
+						float stepValue = (float) (minGainDB + (1/cste)*Math.log(1+(Math.exp(cste*ampGainDB)-1)*(i/100.0f)));
+						volumeControl.setValue(stepValue);
 						try { Thread.sleep(10); } catch(InterruptedException e) {}
 					}
-				} else {
-					for (int i = oldVolume; i >= (value + 1); i = i-1) {
-						setVolume(i, false);
+					
+				//decrease
+				} else {					
+					for (int i = from; i >= (to + 1); i = i-1) {
+						float stepValue = (float) (minGainDB + (1/cste)*Math.log(1+(Math.exp(cste*ampGainDB)-1)*(i/100.0f)));
+
+						volumeControl.setValue(stepValue);
 						try { Thread.sleep(10); } catch(InterruptedException e) {}
 					}
 				}
+				
 				fading = false;
 			}
+		};
 		
-			volumeControl.setValue(valueDB);
-			
-			oldVolume = value;
+		fading = true; // we need to set to true here already, else while loop won't run
+		volumeExecutor.execute(fadeRunnable);
+
+		while (fading) {
+			try { Thread.sleep(100); } catch(InterruptedException e) {}
+		}
+	}
+	
+	protected void firstPacketReceived() {
+		if (!firstPacketReceived) {
+			firstPacketReceived = true;
 		}
 	}
 	
@@ -162,29 +206,45 @@ public class PlayerController extends Thread {
 	
 	public void close() {
 		Applet.audioManager.removePlayer(type, playerId, this);
-
-		/* TODO: fade out properly
-		setVolume(0, true);
-		//wait for volume fadeout
-		try { Thread.sleep(1500); } catch(InterruptedException e) {}
-		*/ 
-		
-		exit = true;
-		
-		this.interrupt();
-		
-		if (line != null) {
-			line.stop();
-			line.close();
-		}
-		if (sequencer != null) {
-			try {
-				sequencer.close();
-			} catch (IllegalStateException e) {}
-		}
-		
 		Applet.audioManager.volumeManager.removePriority(playerPriority);
+
+		fadeVolume(oldVolume, 0);
+		//wait for fadeout if close is called again from another thread
+		while (fading) {
+			try { Thread.sleep(100); } catch(InterruptedException e) {}
+		}
 		
-		queue.clear();
+		final PlayerController controller = this;
+		
+		//shutdown in a second (waits for proper fade out)
+		new Timer().schedule(new TimerTask() {  
+		    @Override
+		    public void run() {
+		    	exit = true;
+				
+				controller.interrupt();
+				
+				if (line != null) {
+					line.stop();
+					line.close();
+				}
+				if (sequencer != null) {
+					try {
+						sequencer.close();
+					} catch (IllegalStateException e) {}
+				}
+				
+				//tell the server to stop streaming to us
+				if (type != GlobalConstants.TYPE_VOICE && type != GlobalConstants.TYPE_GLOBAL) {
+					PlayerController newPlayer = Applet.audioManager.getPlayer(type, playerId);
+					//do not stop streaming if a new player was created for this station
+					if (newPlayer == null || newPlayer.exit) {
+						Applet.audioManager.sendStopCommand(type, playerId);
+					}
+				}
+				
+				queue.clear();
+		    }
+		}, 1000);
 	}
 }

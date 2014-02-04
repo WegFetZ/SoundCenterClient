@@ -28,11 +28,9 @@ public class VolumeManager {
 	
 	public void setPlayerVolume(PlayerController controller, byte volumePercent) {
 		byte value = (byte) (volumePercent * masterVolume/100.D);
-		byte actualVolume = prioritizeVolume(keepInBounds(value), controller.getPlayerPriority());
+		byte priotizedVolume = prioritizeVolume(keepInBounds(value), controller.getPlayerPriority());
 		
-		if (!controller.isFading()) {
-			controller.setVolume(actualVolume, false);
-		}
+		controller.setVolume(priotizedVolume, true);
 	}
 	
 	private byte prioritizeVolume(byte value, int priority) {
