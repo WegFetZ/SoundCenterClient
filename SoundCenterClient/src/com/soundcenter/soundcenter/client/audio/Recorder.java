@@ -77,6 +77,7 @@ public class Recorder implements Runnable {
 		record = false;
 		if (targetLine != null) {
 			targetLine.stop();
+			targetLine.close();
 		}
 	}
 	

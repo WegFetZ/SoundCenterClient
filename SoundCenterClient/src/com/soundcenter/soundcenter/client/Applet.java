@@ -13,55 +13,56 @@ import com.soundcenter.soundcenter.client.util.AppletLogger;
 
 public class Applet extends JApplet {
 
-	public static final double version = 0.100;
-	public static String dataFolder = ""; 
+	public static final double version = 0.110;
+	public static String dataFolder = "";
+	public static UserInterface gui = null;
 	public static AppletLogger logger = null;
 	public static Configuration config = null;
-	public static UserInterface gui = new UserInterface();
-	public static AudioManager audioManager = new AudioManager();
+	public static AudioManager audioManager = null;
 
 	@Override
 	public void init() {
-		Thread.currentThread().setName("Applet");	
-		
-		dataFolder = System.getProperty("user.home") + File.separator + ".soundcenter" + File.separator;
-		new File(dataFolder + "musicdata" + File.separator).mkdirs();
-		
-		logger = new AppletLogger(Logger.getLogger(Applet.class.getName()), gui);
-		config = new Configuration();	
-
-		//start the runtime controller, which shuts down the app
-		new Thread(new AppletRuntimeController(Thread.currentThread())).start();
-		
-		config.load();
-
-		String name = getParameter("minecraft-name");
-		String address = getParameter("server-ip");
-		String port = getParameter("soundcenter-port");
-		if (name != null && name != "")
-			gui.controller.setName(name);
-		if (address != null && address != "")
-			gui.controller.setAddress(address);
-		if (port != null && port != "")
-			gui.controller.setPort(port);
-
-		final JApplet applet = this;
 		try {
+			Thread.currentThread().setName("Applet");
+
+			dataFolder = System.getProperty("user.home") + File.separator + ".soundcenter" + File.separator;
+			new File(dataFolder + "musicdata" + File.separator).mkdirs();
+
+			// start the runtime controller, which shuts down the app
+			new Thread(new AppletRuntimeController(Thread.currentThread())).start();
+
+			String name = getParameter("minecraft-name");
+			String address = getParameter("server-ip");
+			String port = getParameter("soundcenter-port");
+			if (name != null && name != "")
+				gui.controller.setName(name);
+			if (address != null && address != "")
+				gui.controller.setAddress(address);
+			if (port != null && port != "")
+				gui.controller.setPort(port);
+
+			final JApplet applet = this;
+
 			SwingUtilities.invokeAndWait(new Runnable() {
 				public void run() {
+					gui = new UserInterface();
 					gui.setOpaque(true);
 					setContentPane(gui);
 					gui.createGlassPane(applet);
+
+					logger = new AppletLogger(Logger.getLogger(Applet.class.getName()), gui);
+					audioManager = new AudioManager();
+					config = new Configuration();
+					config.load();
+					
+					// autoconnect
+					if (gui.controller.isAutoConnectActive()) {
+						GeneralTabActions.connectButtonPressed();
+					}
 				}
 			});
 		} catch (Exception e) {
-			logger.s("Error while creating GUI:", e);
-		}
-		
-		//autoconnect
-		if (gui.controller.isAutoConnectActive()) {
-			GeneralTabActions.connectButtonPressed();
+			e.printStackTrace();
 		}
 	}
-	
 }

@@ -23,6 +23,7 @@ public class AppletRuntimeController implements Runnable {
 	public void shutdown() {
 		Applet.logger.i("Shutting down...", null);
 		Client.shutdown();
+		Applet.audioManager.recorder.stop();
 		Applet.config.save();
 
 		Applet.logger = null;
