@@ -1,13 +1,9 @@
 package com.soundcenter.soundcenter.client.util;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 import com.soundcenter.soundcenter.client.Applet;
@@ -22,10 +18,12 @@ public class AppletLogger {
 		this.log = log;
 		this.gui = gui;
 		
-		//Redirect console streams to logarea
-		TextAreaOutputStream logOut = new TextAreaOutputStream(gui.generalTab.logArea);
-		System.setOut(new PrintStream(logOut));
-		System.setErr(new PrintStream(logOut));
+		/*
+			//Redirect console streams to logarea
+			TextAreaOutputStream logOut = new TextAreaOutputStream(gui.generalTab.logArea);
+			System.setOut(new PrintStream(logOut));
+			System.setErr(new PrintStream(logOut));
+		*/
 		
 		try {
 			FileHandler fileHandler = new FileHandler(Applet.dataFolder + "sc_log%g.txt", 1024 * 512, 3);
@@ -106,26 +104,28 @@ public class AppletLogger {
         SwingUtilities.invokeLater(runnable);
 	}
 	
-	private class TextAreaOutputStream extends OutputStream {
-		
-		private JTextArea textArea;
-	     
-	    private TextAreaOutputStream(JTextArea textArea) {
-	        this.textArea = textArea;
-	    }
-	     
-	    @Override
-	    public void write(final int b) throws IOException {
-	    	
-	    	Runnable  runnable = new Runnable() {
-	            public void run(){
-	            	textArea.append(String.valueOf((char) b));
-	    	        textArea.setCaretPosition(textArea.getDocument().getLength());
-	            }
-	        };
-	        SwingUtilities.invokeLater(runnable);
-	    }
-		
-	}
+	/*
+		private class TextAreaOutputStream extends OutputStream {
+			
+			private JTextArea textArea;
+		     
+		    private TextAreaOutputStream(JTextArea textArea) {
+		        this.textArea = textArea;
+		    }
+		     
+		    @Override
+		    public void write(final int b) throws IOException {
+		    	
+		    	Runnable  runnable = new Runnable() {
+		            public void run(){
+		            	textArea.append(String.valueOf((char) b));
+		    	        textArea.setCaretPosition(textArea.getDocument().getLength());
+		            }
+		        };
+		        SwingUtilities.invokeLater(runnable);
+		    }
+			
+		}
+	*/
 	
 }
