@@ -5,10 +5,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 import com.soundcenter.soundcenter.client.Applet;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
+import com.soundcenter.soundcenter.lib.udp.UdpOpcodes;
 import com.soundcenter.soundcenter.lib.udp.UdpPacket;
 
 public class UdpClient implements Runnable {
@@ -28,6 +30,7 @@ public class UdpClient implements Runnable {
 		
 		try {
 			datagramSocket = new DatagramSocket();
+			datagramSocket.setSoTimeout(10000); 
 			new Thread(udpProcessor).start();
 			
 			Applet.logger.i("UDP-Client started.", null);
@@ -54,6 +57,13 @@ public class UdpClient implements Runnable {
 				DatagramPacket receivedPacket = new DatagramPacket(data, data.length);
 				datagramSocket.receive(receivedPacket);
 				udpProcessor.queue(receivedPacket.getData());
+			} catch (SocketTimeoutException e) {
+				if (Client.initialized) {
+					Applet.logger.w("Client is not receiving UDP-Packets!", null);					
+					// send another udp packet
+					byte[] packetData = new byte[1];
+					Client.udpClient.sendData(packetData, UdpOpcodes.TYPE_GREET_PACKET);
+				}
 			} catch (IOException e) {
 				if (!exit) {
 					Applet.logger.i("Error while receiving UDP-Packet:", e);

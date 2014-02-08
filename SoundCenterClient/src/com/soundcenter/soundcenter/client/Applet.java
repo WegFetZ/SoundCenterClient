@@ -13,7 +13,7 @@ import com.soundcenter.soundcenter.client.util.AppletLogger;
 
 public class Applet extends JApplet {
 
-	public static final double version = 0.110;
+	public static final double version = 0.112;
 	public static String dataFolder = "";
 	public static UserInterface gui = null;
 	public static AppletLogger logger = null;
@@ -31,16 +31,6 @@ public class Applet extends JApplet {
 			// start the runtime controller, which shuts down the app
 			new Thread(new AppletRuntimeController(Thread.currentThread())).start();
 
-			String name = getParameter("minecraft-name");
-			String address = getParameter("server-ip");
-			String port = getParameter("soundcenter-port");
-			if (name != null && name != "")
-				gui.controller.setName(name);
-			if (address != null && address != "")
-				gui.controller.setAddress(address);
-			if (port != null && port != "")
-				gui.controller.setPort(port);
-
 			final JApplet applet = this;
 
 			SwingUtilities.invokeAndWait(new Runnable() {
@@ -54,6 +44,17 @@ public class Applet extends JApplet {
 					audioManager = new AudioManager();
 					config = new Configuration();
 					config.load();
+					
+					String name = getParameter("minecraft-name");
+					String address = getParameter("server-ip");
+					String port = getParameter("soundcenter-port");
+					if (name != null && name != "")
+						gui.controller.setName(name);
+					if (address != null && address != "")
+						gui.controller.setAddress(address);
+					if (port != null && port != "")
+						gui.controller.setPort(port);
+
 					
 					// autoconnect
 					if (gui.controller.isAutoConnectActive()) {
