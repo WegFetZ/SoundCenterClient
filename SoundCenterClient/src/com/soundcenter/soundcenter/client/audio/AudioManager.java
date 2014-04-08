@@ -85,9 +85,13 @@ public class AudioManager {
 			volumeManager.setPlayerVolume(controller, volumePercent);
 
 		} else if (type == GlobalConstants.TYPE_AREA) {
-			int fadeout = Client.database.getStation(GlobalConstants.TYPE_AREA, id).getRange();
-			byte volumePercent = (byte) ((dist / fadeout) * 100);
-			volumeManager.setPlayerVolume(controller, volumePercent);
+			double fadeout = Client.database.getStation(GlobalConstants.TYPE_AREA, id).getRange();
+			if (fadeout > 0) {
+				byte volumePercent = (byte) ((double)(dist / fadeout) * 100);
+				volumeManager.setPlayerVolume(controller, volumePercent);
+			} else {
+				volumeManager.setPlayerVolume(controller, (byte) 100);
+			}
 		}
 	}
 	
