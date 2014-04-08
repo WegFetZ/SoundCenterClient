@@ -1,7 +1,7 @@
 package com.soundcenter.soundcenter.client.gui.actions;
 
 import javax.swing.DefaultComboBoxModel;
-import com.soundcenter.soundcenter.client.Applet;
+import com.soundcenter.soundcenter.client.AppletStarter;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.tcp.TcpOpcodes;
 
@@ -19,35 +19,35 @@ public class GeneralTabActions {
 		} else {
 			int port = 0;
 			try {
-				port = Integer.parseInt(Applet.gui.controller.getPort());
+				port = Integer.parseInt(AppletStarter.gui.controller.getPort());
 				
 				//add name to player choosers
-				String name = Applet.gui.controller.getName();
-				DefaultComboBoxModel playerMusicModel = (DefaultComboBoxModel) Applet.gui.musicTab.playerComboBox.getModel();
-				DefaultComboBoxModel playerStationsModel = (DefaultComboBoxModel) Applet.gui.stationsTab.playerComboBox.getModel();
+				String name = AppletStarter.gui.controller.getName();
+				DefaultComboBoxModel playerMusicModel = (DefaultComboBoxModel) AppletStarter.gui.musicTab.playerComboBox.getModel();
+				DefaultComboBoxModel playerStationsModel = (DefaultComboBoxModel) AppletStarter.gui.stationsTab.playerComboBox.getModel();
 				playerMusicModel.addElement(name);
 				playerStationsModel.addElement(name);
 				
 				//start client
-				Client.start(Applet.gui.controller.getAddress(), port, name);
+				Client.start(AppletStarter.gui.controller.getAddress(), port, name);
 			} catch(NumberFormatException e) {
-				Applet.logger.w("Cannot connect to port" + port + "!\n" +
+				AppletStarter.logger.w("Cannot connect to port" + port + "!\n" +
 						"Port must be an integer.", null);
 			}
 		}
 	}
 	
 	public static void muteVoiceButtonClicked() {
-		boolean selected = Applet.gui.generalTab.muteVoiceButton.isSelected();
+		boolean selected = AppletStarter.gui.generalTab.muteVoiceButton.isSelected();
 		
 		if (!selected) {
-			Applet.gui.generalTab.muteVoiceButton.setText("Voice muted");
+			AppletStarter.gui.generalTab.muteVoiceButton.setText("Voice muted");
 			if (Client.tcpClient != null) {
 				Client.tcpClient.sendPacket(TcpOpcodes.SV_STREAM_CMD_MUTE_VOICE, null, null);
 			}
-			Applet.audioManager.stopVoice();
+			AppletStarter.audioManager.stopVoice();
 		} else {
-			Applet.gui.generalTab.muteVoiceButton.setText("Voice active");
+			AppletStarter.gui.generalTab.muteVoiceButton.setText("Voice active");
 			if (Client.tcpClient != null) {
 				Client.tcpClient.sendPacket(TcpOpcodes.SV_STREAM_CMD_UNMUTE_VOICE, null, null);
 			}
@@ -55,13 +55,13 @@ public class GeneralTabActions {
 	}
 	
 	public static void muteMusicButtonClicked() {
-		boolean selected = Applet.gui.generalTab.muteMusicButton.isSelected();
+		boolean selected = AppletStarter.gui.generalTab.muteMusicButton.isSelected();
 		
 		if (!selected) {
-			Applet.gui.generalTab.muteMusicButton.setText("Music muted");
-			Applet.audioManager.stopMusic();
+			AppletStarter.gui.generalTab.muteMusicButton.setText("Music muted");
+			AppletStarter.audioManager.stopMusic();
 		} else {
-			Applet.gui.generalTab.muteMusicButton.setText("Music active");
+			AppletStarter.gui.generalTab.muteMusicButton.setText("Music active");
 		}
 	}
 }

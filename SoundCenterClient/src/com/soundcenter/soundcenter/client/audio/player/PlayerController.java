@@ -11,7 +11,7 @@ import javax.sound.midi.Sequencer;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.SourceDataLine;
 
-import com.soundcenter.soundcenter.client.Applet;
+import com.soundcenter.soundcenter.client.AppletStarter;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.data.Station;
@@ -56,7 +56,7 @@ public class PlayerController extends Thread {
 			this.playerPriority = station.getPriority();
 		}
 		
-		Applet.audioManager.volumeManager.addPriority(playerPriority);
+		AppletStarter.audioManager.volumeManager.addPriority(playerPriority);
 	}
 	
 	
@@ -186,13 +186,13 @@ public class PlayerController extends Thread {
 		}
 		
 		//add the next player to the player list
-		Applet.audioManager.putPlayer(type, playerId, nextPlayer);
+		AppletStarter.audioManager.putPlayer(type, playerId, nextPlayer);
 		nextPlayer.start();
 	}
 	
 	public void setNextMidiPlayer(MidiNotificationPacket notification) {
 		nextPlayer = new MidiPlayer(notification.getType(), notification.getId()
-				, Applet.dataFolder + "musicdata" + File.separator + notification.getPath()
+				, AppletStarter.dataFolder + "musicdata" + File.separator + notification.getPath()
 				, notification.getBytesToSkip());
 		nextPlayer.setPlayerPriority(playerPriority);
 		
@@ -205,8 +205,8 @@ public class PlayerController extends Thread {
 	}
 	
 	public void close() {
-		Applet.audioManager.removePlayer(type, playerId, this);
-		Applet.audioManager.volumeManager.removePriority(playerPriority);
+		AppletStarter.audioManager.removePlayer(type, playerId, this);
+		AppletStarter.audioManager.volumeManager.removePriority(playerPriority);
 
 		fadeVolume(oldVolume, 0);
 		//wait for fadeout if close is called again from another thread
@@ -236,10 +236,10 @@ public class PlayerController extends Thread {
 				
 				//tell the server to stop streaming to us
 				if (type != GlobalConstants.TYPE_VOICE && type != GlobalConstants.TYPE_GLOBAL) {
-					PlayerController newPlayer = Applet.audioManager.getPlayer(type, playerId);
+					PlayerController newPlayer = AppletStarter.audioManager.getPlayer(type, playerId);
 					//do not stop streaming if a new player was created for this station
 					if (newPlayer == null || newPlayer.exit) {
-						Applet.audioManager.sendStopCommand(type, playerId);
+						AppletStarter.audioManager.sendStopCommand(type, playerId);
 					}
 				}
 				

@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import javax.swing.SwingUtilities;
 
-import com.soundcenter.soundcenter.client.Applet;
+import com.soundcenter.soundcenter.client.AppletStarter;
 import com.soundcenter.soundcenter.client.gui.UserInterface;
 
 public class AppletLogger {
@@ -26,7 +26,7 @@ public class AppletLogger {
 		*/
 		
 		try {
-			FileHandler fileHandler = new FileHandler(Applet.dataFolder + "sc_log%g.txt", 1024 * 512, 3);
+			FileHandler fileHandler = new FileHandler(AppletStarter.dataFolder + "sc_log%g.txt", 1024 * 512, 3);
 			fileHandler.setFormatter(new SimpleFormatter());
 			log.setUseParentHandlers(false);
 			log.addHandler(fileHandler);

@@ -7,7 +7,7 @@ import java.text.DecimalFormat;
 
 import javax.swing.JFrame;
 
-import com.soundcenter.soundcenter.client.Applet;
+import com.soundcenter.soundcenter.client.AppletStarter;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.client.gui.dialogs.UploadSongDialog;
 import com.soundcenter.soundcenter.lib.data.Song;
@@ -110,7 +110,7 @@ public class UploadManager implements Runnable {
 					fileIn.close();
 				}
 			} catch (IOException e) {
-				Applet.logger.i("Error while uploading song. \n"
+				AppletStarter.logger.i("Error while uploading song. \n"
 						+ "Maybe the connection was lost?", e);
 			}		
 		}

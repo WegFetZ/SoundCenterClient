@@ -12,7 +12,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import com.soundcenter.soundcenter.client.Applet;
+import com.soundcenter.soundcenter.client.AppletStarter;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 
 public class RadioPlayer extends PlayerController {
@@ -33,13 +33,13 @@ public class RadioPlayer extends PlayerController {
 		AudioInputStream decodedAudioStream = null;
 		try {
 			encodedAudioStream = AudioSystem.getAudioInputStream(new URL(streamUrl));
-			//Applet.logger.d("Raw-Input-Stream created!", null);
+			//AppletStarter.logger.d("Raw-Input-Stream created!", null);
 
 			if (encodedAudioStream != null) {
 				init(encodedAudioStream.getFormat());
 
 				decodedAudioStream = AudioSystem.getAudioInputStream(decodedFormat, encodedAudioStream);
-				//Applet.logger.d("Decoder-Stream created!", null);
+				//AppletStarter.logger.d("Decoder-Stream created!", null);
 
 				int numBytesRead = 0;
 				while (!exit && line.isOpen()) { // TODO: numBytesRead = -1
@@ -54,12 +54,12 @@ public class RadioPlayer extends PlayerController {
 			}
 		} catch (LineUnavailableException e) {
 			if (!exit)
-				Applet.logger.i("Error while playing music stream:", e);
+				AppletStarter.logger.i("Error while playing music stream:", e);
 		} catch (IOException e) {
 			if (!exit)
-				Applet.logger.i("Error while writing to sourceDataLine:", e);
+				AppletStarter.logger.i("Error while writing to sourceDataLine:", e);
 		} catch (UnsupportedAudioFileException e) {
-			Applet.logger.i("Error while retrieving audio file format information:", e);
+			AppletStarter.logger.i("Error while retrieving audio file format information:", e);
 		}
 
 		if (!exit) {
@@ -73,7 +73,7 @@ public class RadioPlayer extends PlayerController {
 				decodedAudioStream.close();
 		} catch (IOException e) {}
 		
-		// Applet.logger.d("Song stopped/ finished at player " + id + ".",
+		// AppletStarter.logger.d("Song stopped/ finished at player " + id + ".",
 		// null);
 	}
 
@@ -96,6 +96,6 @@ public class RadioPlayer extends PlayerController {
 		
 		line.start();
 
-		Applet.logger.d("MusicPlayer SourceDataLine started!", null);
+		AppletStarter.logger.d("MusicPlayer SourceDataLine started!", null);
 	}
 }

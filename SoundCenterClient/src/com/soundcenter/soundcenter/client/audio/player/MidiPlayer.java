@@ -12,7 +12,7 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
-import com.soundcenter.soundcenter.client.Applet;
+import com.soundcenter.soundcenter.client.AppletStarter;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 
 public class MidiPlayer extends PlayerController {
@@ -36,7 +36,7 @@ public class MidiPlayer extends PlayerController {
 			
 			init();
 
-			Applet.logger.d("Starting midi: " + filePath + " (pos: " + position + ") on " 
+			AppletStarter.logger.d("Starting midi: " + filePath + " (pos: " + position + ") on " 
 			+ type + " (" + playerId + ").", null);
 
 				FileInputStream stream = new FileInputStream(filePath);
@@ -50,15 +50,15 @@ public class MidiPlayer extends PlayerController {
 
 		} catch (InvalidMidiDataException e) {
 			if (!exit)
-				Applet.logger.i("Error while playing Midi:", e);
+				AppletStarter.logger.i("Error while playing Midi:", e);
 			close();
 		} catch (FileNotFoundException e) {
 			if (!exit)
-				Applet.logger.i("Error while playing Midi:", e);
+				AppletStarter.logger.i("Error while playing Midi:", e);
 			close();
 		} catch (IOException e) {
 			if (!exit)
-				Applet.logger.i("Error while playing Midi:", e);
+				AppletStarter.logger.i("Error while playing Midi:", e);
 			close();
 		}
 		
@@ -87,7 +87,7 @@ public class MidiPlayer extends PlayerController {
 		        });
 			
 		} catch (MidiUnavailableException e) {
-			Applet.logger.i("Error while initializing MidiPlayer:", e);
+			AppletStarter.logger.i("Error while initializing MidiPlayer:", e);
 		}
 	}
 	
@@ -160,7 +160,7 @@ public class MidiPlayer extends PlayerController {
 				message.setMessage(ShortMessage.CONTROL_CHANGE, i, 7, vol);
 				receiver.send(message, -1);
 			} catch (InvalidMidiDataException e) {
-				Applet.logger.d("Error while setting midi volume.", e);
+				AppletStarter.logger.d("Error while setting midi volume.", e);
 			}
 		}
 	}
@@ -169,7 +169,7 @@ public class MidiPlayer extends PlayerController {
 	public void close() {
 		super.close();
 		
-		Applet.logger.d("MidiPlayer " + type + " (" + playerId + ") closed.", null);
+		AppletStarter.logger.d("MidiPlayer " + type + " (" + playerId + ") closed.", null);
 	}
 
 }

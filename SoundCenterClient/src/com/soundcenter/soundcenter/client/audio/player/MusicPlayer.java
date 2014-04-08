@@ -16,7 +16,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import com.soundcenter.soundcenter.client.Applet;
+import com.soundcenter.soundcenter.client.AppletStarter;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.udp.UdpPacket;
 
@@ -55,7 +55,7 @@ public class MusicPlayer extends PlayerController {
 				
 				//quit when no packet arrives for 5 seconds
 				if (packet == null) {
-					//Applet.logger.d("Player timed out. Closing...", null);
+					//AppletStarter.logger.d("Player timed out. Closing...", null);
 					close();
 					break;
 				}					
@@ -83,7 +83,7 @@ public class MusicPlayer extends PlayerController {
 			close();
 		}
 		
-		Applet.logger.d("MusicSession ID: " + playerId + " closed.", null);
+		AppletStarter.logger.d("MusicSession ID: " + playerId + " closed.", null);
 	}	
 	
 	//TODO fix exception on player reset
@@ -109,7 +109,7 @@ public class MusicPlayer extends PlayerController {
 				streamOut = new BufferedOutputStream(pipeOut);
 				streamIn = new BufferedInputStream(pipeIn);
 			} catch (IOException e) {
-				Applet.logger.i("Error while creating pipes for music player", e);
+				AppletStarter.logger.i("Error while creating pipes for music player", e);
 				stopPlayer();
 			}
 		}
@@ -122,13 +122,13 @@ public class MusicPlayer extends PlayerController {
 			AudioInputStream decodedAudioStream = null;
 			try {
 				encodedAudioStream = AudioSystem.getAudioInputStream(streamIn);
-				//Applet.logger.d("Raw-Input-Stream created!", null);
+				//AppletStarter.logger.d("Raw-Input-Stream created!", null);
 				
 				if (encodedAudioStream != null) {
 					init(encodedAudioStream.getFormat());
 					
 					decodedAudioStream = AudioSystem.getAudioInputStream(decodedFormat, encodedAudioStream);
-					//Applet.logger.d("Decoder-Stream created!", null);
+					//AppletStarter.logger.d("Decoder-Stream created!", null);
 					
 					int numBytesRead = 0;
 					while (!exit && !stop && line.isOpen()) {
@@ -143,12 +143,12 @@ public class MusicPlayer extends PlayerController {
 				}
 			} catch (LineUnavailableException e) {
 				if (!stop && ! exit)
-					Applet.logger.i("Error while playing music stream:", e);
+					AppletStarter.logger.i("Error while playing music stream:", e);
 			} catch (IOException e) {
 				if (!stop && ! exit)
-					Applet.logger.i("Error while writing to sourceDataLine:", e);
+					AppletStarter.logger.i("Error while writing to sourceDataLine:", e);
 			} catch (UnsupportedAudioFileException e) {
-				Applet.logger.i("Error while retrieving audio file format information:", e);
+				AppletStarter.logger.i("Error while retrieving audio file format information:", e);
 			}
 			
 			if (!stop) {
@@ -162,7 +162,7 @@ public class MusicPlayer extends PlayerController {
 					decodedAudioStream.close();
 			} catch (IOException e) {}
 			
-			//Applet.logger.d("Song stopped/ finished at player " + playerId + ".", null);
+			//AppletStarter.logger.d("Song stopped/ finished at player " + playerId + ".", null);
 		}
 		
 	
@@ -185,7 +185,7 @@ public class MusicPlayer extends PlayerController {
 			
 			line.start();
 			
-			//Applet.logger.d("MusicPlayer SourceDataLine started!", null);
+			//AppletStarter.logger.d("MusicPlayer SourceDataLine started!", null);
 		}	
 		
 		private void write(byte[] data) {
@@ -193,7 +193,7 @@ public class MusicPlayer extends PlayerController {
 				streamOut.write(data);
 			} catch(IOException e) {
 				if (!stop && !exit)
-					Applet.logger.d("Error while writing song data to musicplayer.", e);
+					AppletStarter.logger.d("Error while writing song data to musicplayer.", e);
 				player.stopPlayer();
 			}
 		}

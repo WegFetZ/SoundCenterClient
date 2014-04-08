@@ -11,7 +11,7 @@ import com.soundcenter.soundcenter.client.gui.UserInterface;
 import com.soundcenter.soundcenter.client.gui.actions.GeneralTabActions;
 import com.soundcenter.soundcenter.client.util.AppletLogger;
 
-public class Applet extends JApplet {
+public class AppletStarter extends JApplet {
 
 	public static final double version = 0.112;
 	public static String dataFolder = "";
@@ -40,7 +40,7 @@ public class Applet extends JApplet {
 					setContentPane(gui);
 					gui.createGlassPane(applet);
 
-					logger = new AppletLogger(Logger.getLogger(Applet.class.getName()), gui);
+					logger = new AppletLogger(Logger.getLogger(AppletStarter.class.getName()), gui);
 					audioManager = new AudioManager();
 					config = new Configuration();
 					config.load();

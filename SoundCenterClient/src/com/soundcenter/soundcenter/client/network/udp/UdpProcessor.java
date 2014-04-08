@@ -3,7 +3,7 @@ package com.soundcenter.soundcenter.client.network.udp;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.soundcenter.soundcenter.client.Applet;
+import com.soundcenter.soundcenter.client.AppletStarter;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.udp.UdpOpcodes;
@@ -34,7 +34,7 @@ public class UdpProcessor implements Runnable {
 	
 	private void process(UdpPacket packet) {
 		
-		//Applet.logger.d("Received Udp-Message: IDENT: " + packet.getIdent() + " Sequence: " + packet.getSeq() + " DestUser: " + packet.getDestUserID() + " Type: " + packet.getType(), null);
+		//AppletStarter.logger.d("Received Udp-Message: IDENT: " + packet.getIdent() + " Sequence: " + packet.getSeq() + " DestUser: " + packet.getDestUserID() + " Type: " + packet.getType(), null);
 		
 		//return if ident number is wrong
 		if (packet.getIdent() != GlobalConstants.UDP_IDENT) {
@@ -54,16 +54,16 @@ public class UdpProcessor implements Runnable {
 		serverSequence = packet.getSeq();
 		
 		if (packet.getType() == UdpOpcodes.INFO_LOCATION) {		/* location update */
-			//Applet.logger.d("Location info: World: " + packet.getLocation().getWorld() + " X:" + packet.getLocation().getX() + " Y:" + packet.getLocation().getY()  + " Z:" + packet.getLocation().getZ(), null);
+			//AppletStarter.logger.d("Location info: World: " + packet.getLocation().getWorld() + " X:" + packet.getLocation().getX() + " Y:" + packet.getLocation().getY()  + " Z:" + packet.getLocation().getZ(), null);
 			Client.statusUpdater.setLocation(packet.getLocation());
 			
 		} else if (isInGroup(packet.getType(), UdpOpcodes.GROUP_STREAM, UdpOpcodes.GROUP_END_STREAM)) {	/* music or voice stream */
-			//Applet.logger.d("Player info: Type: " + packet.getType() + " Creator: " + packet.getID() + " Volume: " + packet.getVolume(), null);
-			Applet.audioManager.feedPacket(packet);
+			//AppletStarter.logger.d("Player info: Type: " + packet.getType() + " Creator: " + packet.getID() + " Volume: " + packet.getVolume(), null);
+			AppletStarter.audioManager.feedPacket(packet);
 			
 			//volume for voice gets calculated on the server, so we have to set it here
 			if (packet.getType() == UdpOpcodes.TYPE_VOICE) {
-				Applet.audioManager.volumeManager.setPlayerVolume(packet.getType(), packet.getID(), packet.getVolume());
+				AppletStarter.audioManager.volumeManager.setPlayerVolume(packet.getType(), packet.getID(), packet.getVolume());
 			}
 		}				
 	}

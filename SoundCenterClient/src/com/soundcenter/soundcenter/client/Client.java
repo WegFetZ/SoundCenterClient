@@ -28,16 +28,16 @@ public class Client {
 	
 	public static void start(String ip, int port, String name) {
 		if (active) {
-			Applet.logger.d("Cannot start a new client-instance while another is active.", null);
+			AppletStarter.logger.d("Cannot start a new client-instance while another is active.", null);
 			return;
 		}
 		
-		Applet.logger.lineBreak(2);
+		AppletStarter.logger.lineBreak(2);
 		
-		Applet.gui.controller.setConnectButtonEnabled(false);
-		Applet.gui.controller.setConnectButtonText("Disconnect");
-		Applet.gui.controller.disableConnectionDataFields();
-		Applet.gui.controller.setConnectionStatus("Connecting...");
+		AppletStarter.gui.controller.setConnectButtonEnabled(false);
+		AppletStarter.gui.controller.setConnectButtonText("Disconnect");
+		AppletStarter.gui.controller.disableConnectionDataFields();
+		AppletStarter.gui.controller.setConnectionStatus("Connecting...");
 		
 		reconnect = false;
 		active = true;
@@ -58,7 +58,7 @@ public class Client {
 			new Thread(tcpClient).start();
 			
 		} catch (UnknownHostException e) {
-			Applet.logger.w("Host unavailable: " + ip + ":", e);
+			AppletStarter.logger.w("Host unavailable: " + ip + ":", e);
 			shutdown();
 		}
 		
@@ -70,8 +70,8 @@ public class Client {
 			return;
 		}
 		
-		Applet.gui.controller.setConnectButtonEnabled(false);
-		Applet.gui.controller.setConnectionStatus("Disconnecting...");
+		AppletStarter.gui.controller.setConnectButtonEnabled(false);
+		AppletStarter.gui.controller.setConnectionStatus("Disconnecting...");
 		
 		exit = true;
 		
@@ -82,7 +82,7 @@ public class Client {
 			udpClient.shutdown();
 		if (statusUpdater != null)
 			statusUpdater.shutdown();
-		Applet.audioManager.stopAll();
+		AppletStarter.audioManager.stopAll();
 		
 		database.reset();
 		
@@ -101,24 +101,24 @@ public class Client {
 			}
 		}
 			
-		Applet.gui.controller.setLoading(false);
+		AppletStarter.gui.controller.setLoading(false);
 		active = false;
 		userName = "";
 		
-		Applet.gui.controller.enableConnectionDataFields();
-		Applet.gui.controller.setConnectionStatus("Disconnected");
-		Applet.gui.controller.setConnectButtonText("Connect");
-		Applet.gui.controller.setConnectButtonEnabled(true);
+		AppletStarter.gui.controller.enableConnectionDataFields();
+		AppletStarter.gui.controller.setConnectionStatus("Disconnected");
+		AppletStarter.gui.controller.setConnectButtonText("Connect");
+		AppletStarter.gui.controller.setConnectButtonEnabled(true);
 		
-		if (!active && Applet.gui.controller.isAutoReconnectActive() && reconnect) {
+		if (!active && AppletStarter.gui.controller.isAutoReconnectActive() && reconnect) {
 			if (reconnectTries < 1) {
-				Applet.logger.i("Reconnecting...", null);
+				AppletStarter.logger.i("Reconnecting...", null);
 				GeneralTabActions.connectButtonPressed();
 				reconnectTries ++;
 				
 				return;
 			}
-			Applet.logger.i("Client will not reconnect", null);
+			AppletStarter.logger.i("Client will not reconnect", null);
 		}
 		
 	}

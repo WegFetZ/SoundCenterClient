@@ -8,7 +8,7 @@ import javax.sound.sampled.TargetDataLine;
 
 import org.xiph.speex.SpeexEncoder;
 
-import com.soundcenter.soundcenter.client.Applet;
+import com.soundcenter.soundcenter.client.AppletStarter;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.udp.UdpOpcodes;
 
@@ -30,7 +30,7 @@ public class Recorder implements Runnable {
 			targetLine = (TargetDataLine) AudioSystem.getLine(dataLineInfo);
 			targetLine.open(getAudioFormat(), bufferSize);
 		} catch (LineUnavailableException e) {
-			Applet.logger.w("Could not create recorder.", e);
+			AppletStarter.logger.w("Could not create recorder.", e);
 		}
 
 		//Initialize the speex encoder
@@ -67,13 +67,13 @@ public class Recorder implements Runnable {
 		if (targetLine != null) {
 			record = true;
 			targetLine.start();
-			Applet.logger.i("Recording voice...", null);
+			AppletStarter.logger.i("Recording voice...", null);
 		}
 	}
 
 	public void stop() {
 		if (record)
-			Applet.logger.i("Recording ended.", null);
+			AppletStarter.logger.i("Recording ended.", null);
 		record = false;
 		if (targetLine != null) {
 			targetLine.stop();

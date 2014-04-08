@@ -7,7 +7,7 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
-import com.soundcenter.soundcenter.client.Applet;
+import com.soundcenter.soundcenter.client.AppletStarter;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.tcp.TcpOpcodes;
 import com.soundcenter.soundcenter.lib.tcp.TcpPacket;
@@ -32,7 +32,7 @@ public class TcpClient implements Runnable {
 	public void run() {
 		Thread.currentThread().setName("TcpClient");
 		if (active) {
-			Applet.logger.d("Cannot start a new TCP-Client session while another is active.", null);
+			AppletStarter.logger.d("Cannot start a new TCP-Client session while another is active.", null);
 			return;
 		}
 		
@@ -43,12 +43,12 @@ public class TcpClient implements Runnable {
 			streamOut = new ObjectOutputStream(socket.getOutputStream());
 			streamIn = new ObjectInputStream(socket.getInputStream());
 			
-			Applet.logger.i("TCP-Client started on: " + addr.getHostAddress() + ":" + port + ".", null);
-			Applet.gui.controller.setConnectButtonEnabled(true);
+			AppletStarter.logger.i("TCP-Client started on: " + addr.getHostAddress() + ":" + port + ".", null);
+			AppletStarter.gui.controller.setConnectButtonEnabled(true);
 
 			sendPacket(TcpOpcodes.SV_CON_REQ_JOIN, null, null);
 		} catch (IOException e) {
-			Applet.logger.w("Cannot get the I/O for " + addr.getHostAddress() + ":" + port + ".\n " +
+			AppletStarter.logger.w("Cannot get the I/O for " + addr.getHostAddress() + ":" + port + ".\n " +
 					"Please make sure that port " + port + " is forwarded for TCP and UDP on the server.", e);
 			exit = true;
 		}
@@ -61,24 +61,24 @@ public class TcpClient implements Runnable {
 				if (receivedPacket instanceof TcpPacket) {
 					
 					if (!TcpProtocol.processPacket((TcpPacket) receivedPacket)) {
-						Applet.logger.i("Closing connection to server. Reason: " + Client.quitReason, null);
+						AppletStarter.logger.i("Closing connection to server. Reason: " + Client.quitReason, null);
 						Client.reconnect = true;
 						exit = true;
 					}
 				}
 			} catch (IOException e) {
 				if (!exit && !socket.isClosed()) {
-					Applet.logger.i("Error while receiving TCP-Packet:", e);
+					AppletStarter.logger.i("Error while receiving TCP-Packet:", e);
 					Client.reconnect = true;
 				}
 				exit = true;
 			} catch(ClassCastException e) {
 				Client.reconnect = true;
-				Applet.logger.w("An error occured while restoring an object from TCP-Stream.", e);
+				AppletStarter.logger.w("An error occured while restoring an object from TCP-Stream.", e);
 				exit = true;
 			} catch (ClassNotFoundException e) {
 				Client.reconnect = true;
-				Applet.logger.w("TCP-error while reading packet:", e);
+				AppletStarter.logger.w("TCP-error while reading packet:", e);
 				exit = true;
 			}
 		}
@@ -86,7 +86,7 @@ public class TcpClient implements Runnable {
 		exit = true;
 		active = false;
 		Client.shutdown();
-		Applet.logger.i("TCP-Client was shut down!", null);		
+		AppletStarter.logger.i("TCP-Client was shut down!", null);		
 	}
 	
 	public synchronized void sendPacket(Byte opCode, Object key, Object value) {
@@ -96,7 +96,7 @@ public class TcpClient implements Runnable {
 				streamOut.writeObject(packet);
 			} catch(IOException e) {
 				if (!exit) {
-					Applet.logger.i("TCP-error while sending packet:", e);
+					AppletStarter.logger.i("TCP-error while sending packet:", e);
 				}
 				exit = true;
 			}
@@ -112,7 +112,7 @@ public class TcpClient implements Runnable {
 			uploadManager = new UploadManager(files);
 			new Thread(uploadManager).start();
 		} else {
-			Applet.logger.i("Could not start new upload-manager, because one was already running.", null);
+			AppletStarter.logger.i("Could not start new upload-manager, because one was already running.", null);
 		}
 	}
 	
