@@ -13,7 +13,7 @@ import com.soundcenter.soundcenter.client.util.AppletLogger;
 
 public class AppletStarter extends JApplet {
 
-	public static final double version = 0.112;
+	public static final double version = 0.113;
 	public static String dataFolder = "";
 	public static UserInterface gui = null;
 	public static AppletLogger logger = null;
