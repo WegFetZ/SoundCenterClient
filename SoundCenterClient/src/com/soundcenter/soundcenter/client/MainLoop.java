@@ -9,7 +9,7 @@ import com.soundcenter.soundcenter.client.util.IntersectionDetection;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.data.SCLocation;
 
-public class StatusUpdater implements Runnable {
+public class MainLoop implements Runnable {
 
 	private boolean exit = false;
 	private SCLocation location = null;
@@ -27,7 +27,7 @@ public class StatusUpdater implements Runnable {
 				List<Short> biomesInRange = IntersectionDetection.getBiomeInRange(location);
 				List<Short> worldsInRange = IntersectionDetection.getWorldInRange(location);
 				
-				//TODO RANDBEREICH!!!
+				//TODO: BORDERS!!!
 				
 				/* update box players */
 				for (Entry<Short, PlayerController> entry : AppletStarter.audioManager.boxPlayers.entrySet()) {
