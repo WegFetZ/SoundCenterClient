@@ -40,9 +40,9 @@ public class TcpProtocol {
 				Client.connectionAccepted = true;
 				AppletStarter.gui.controller.setConnectionStatus("Connection accepted");
 
-				// send udp packet to say hello to the udp server
+				// start to send udp heartbeat
 				byte[] data = new byte[1];
-				Client.udpClient.sendData(data, UdpOpcodes.TYPE_GREET_PACKET);
+				Client.udpClient.sendData(data, UdpOpcodes.TYPE_HEARTBEAT);
 
 				return true;
 

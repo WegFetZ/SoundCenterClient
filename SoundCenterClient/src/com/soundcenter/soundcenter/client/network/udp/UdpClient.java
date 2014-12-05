@@ -17,7 +17,7 @@ public class UdpClient implements Runnable {
 	
 	private InetAddress addr;
 	private DatagramSocket datagramSocket;
-	int port = 4224;
+	private int port = 4224;
 	private UdpProcessor udpProcessor = new UdpProcessor();
 	
 	private boolean exit = false;
@@ -30,12 +30,13 @@ public class UdpClient implements Runnable {
 		
 		try {
 			datagramSocket = new DatagramSocket();
-			datagramSocket.setSoTimeout(10000); 
+			datagramSocket.setSoTimeout(10000);
 			new Thread(udpProcessor).start();
 			
 			AppletStarter.logger.i("UDP-Client started.", null);
+			
 		} catch (SocketException e) {
-			AppletStarter.logger.w("Error while creating UDP-Socket:", e);
+			AppletStarter.logger.w("Error while creating UDP-Socket. Is another instance of SoundCenter running?:", e);
 			exit = true;
 		}
 	}
@@ -60,10 +61,10 @@ public class UdpClient implements Runnable {
 			} catch (SocketTimeoutException e) {
 				if (Client.initialized) {
 					AppletStarter.logger.w("Client is not receiving UDP-Packets!", null);					
-					// send another udp packet
-					byte[] packetData = new byte[1];
-					Client.udpClient.sendData(packetData, UdpOpcodes.TYPE_GREET_PACKET);
 				}
+				// send a udp heartbeat packet
+				byte[] packetData = new byte[1];
+				Client.udpClient.sendData(packetData, UdpOpcodes.TYPE_HEARTBEAT);
 			} catch (IOException e) {
 				if (!exit) {
 					AppletStarter.logger.i("Error while receiving UDP-Packet:", e);

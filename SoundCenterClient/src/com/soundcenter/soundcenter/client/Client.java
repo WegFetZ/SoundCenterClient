@@ -11,7 +11,7 @@ import com.soundcenter.soundcenter.client.network.udp.UdpClient;
 public class Client {
 
 	public static Database database = new Database();
-	public static StatusUpdater statusUpdater = null;
+	public static MainLoop statusUpdater = null;
 	public static TcpClient tcpClient = null;
 	public static UdpClient udpClient = null;
 	
@@ -49,13 +49,13 @@ public class Client {
 		
 		try {
 			InetAddress addr = InetAddress.getByName(ip);
-			udpClient = new UdpClient(addr, port);
 			tcpClient = new TcpClient(addr, port);
+			udpClient = new UdpClient(addr, port);
 			
-			new Thread(udpClient).start();
-			statusUpdater = new StatusUpdater();
-			new Thread(statusUpdater).start();
 			new Thread(tcpClient).start();
+			new Thread(udpClient).start();
+			statusUpdater = new MainLoop();
+			new Thread(statusUpdater).start();
 			
 		} catch (UnknownHostException e) {
 			AppletStarter.logger.w("Host unavailable: " + ip + ":", e);
