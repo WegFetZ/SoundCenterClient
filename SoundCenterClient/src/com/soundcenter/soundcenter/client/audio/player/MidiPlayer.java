@@ -99,12 +99,12 @@ public class MidiPlayer extends PlayerController {
 	}
 
 	@Override
-	public void setVolume(byte value, boolean allowFade) {
+	public void setVolume(int value, boolean allowFade) {
 		if (sequencer != null && sequencer.isOpen()) {
 			
 			//calculate value: f(x) = -0,0126x^2 + 2.53x 	(half range is 75% of volume)
-			final byte vol = (byte) (-0.0126*Math.pow(value, 2) + 2.53*value);
-			
+			final int vol = (int)(-0.0126*Math.pow(value, 2) + 2.53*value);
+			App.logger.d("value: " + value + " vol: " + vol, null);//TODO
 			boolean fade = false;
 			if (allowFade && Math.abs(oldVolume - value) > 20) {
 				fade = true;

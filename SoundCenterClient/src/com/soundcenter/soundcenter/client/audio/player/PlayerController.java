@@ -28,7 +28,7 @@ public class PlayerController extends Thread {
 	protected boolean firstPacketReceived = false;
 	protected ExecutorService volumeExecutor = Executors.newFixedThreadPool(1);
 	protected boolean fading = false;
-	protected byte oldVolume = 0;
+	protected int oldVolume = 0;
 	
 	protected Sequencer sequencer = null;
 	protected SourceDataLine line = null;
@@ -100,11 +100,11 @@ public class PlayerController extends Thread {
 		queue.add(packet);
 	}
 	
-	public byte getVolume() {
+	public int getVolume() {
 		return oldVolume;
 	}
 
-	public void setVolume(byte value, boolean allowFade) {
+	public void setVolume(int value, boolean allowFade) {
 		// do not set the volume before the first packet was received
 		// this is to prevent the volume from fading in before anything is played		
 		if (volumeControl != null && !fading && firstPacketReceived) { 
