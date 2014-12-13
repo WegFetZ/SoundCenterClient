@@ -11,7 +11,7 @@ import com.soundcenter.soundcenter.client.network.udp.UdpClient;
 public class Client {
 
 	public static Database database = new Database();
-	public static MainLoop statusUpdater = null;
+	public static MainLoop mainLoop = null;
 	public static TcpClient tcpClient = null;
 	public static UdpClient udpClient = null;
 	
@@ -28,16 +28,16 @@ public class Client {
 	
 	public static void start(String ip, int port, String name) {
 		if (active) {
-			AppletStarter.logger.d("Cannot start a new client-instance while another is active.", null);
+			App.logger.d("Cannot start a new client-instance while another is active.", null);
 			return;
 		}
 		
-		AppletStarter.logger.lineBreak(2);
+		App.logger.lineBreak(2);
 		
-		AppletStarter.gui.controller.setConnectButtonEnabled(false);
-		AppletStarter.gui.controller.setConnectButtonText("Disconnect");
-		AppletStarter.gui.controller.disableConnectionDataFields();
-		AppletStarter.gui.controller.setConnectionStatus("Connecting...");
+		App.gui.controller.setConnectButtonEnabled(false);
+		App.gui.controller.setConnectButtonText("Disconnect");
+		App.gui.controller.disableConnectionDataFields();
+		App.gui.controller.setConnectionStatus("Connecting...");
 		
 		reconnect = false;
 		active = true;
@@ -54,11 +54,11 @@ public class Client {
 			
 			new Thread(tcpClient).start();
 			new Thread(udpClient).start();
-			statusUpdater = new MainLoop();
-			new Thread(statusUpdater).start();
+			mainLoop = new MainLoop();
+			new Thread(mainLoop).start();
 			
 		} catch (UnknownHostException e) {
-			AppletStarter.logger.w("Host unavailable: " + ip + ":", e);
+			App.logger.w("Host unavailable: " + ip + ":", e);
 			shutdown();
 		}
 		
@@ -70,8 +70,8 @@ public class Client {
 			return;
 		}
 		
-		AppletStarter.gui.controller.setConnectButtonEnabled(false);
-		AppletStarter.gui.controller.setConnectionStatus("Disconnecting...");
+		App.gui.controller.setConnectButtonEnabled(false);
+		App.gui.controller.setConnectionStatus("Disconnecting...");
 		
 		exit = true;
 		
@@ -80,9 +80,9 @@ public class Client {
 		}
 		if (udpClient != null)
 			udpClient.shutdown();
-		if (statusUpdater != null)
-			statusUpdater.shutdown();
-		AppletStarter.audioManager.stopAll();
+		if (mainLoop != null)
+			mainLoop.shutdown();
+		App.audioManager.stopAll();
 		
 		database.reset();
 		
@@ -101,24 +101,24 @@ public class Client {
 			}
 		}
 			
-		AppletStarter.gui.controller.setLoading(false);
+		App.gui.controller.setLoading(false);
 		active = false;
 		userName = "";
 		
-		AppletStarter.gui.controller.enableConnectionDataFields();
-		AppletStarter.gui.controller.setConnectionStatus("Disconnected");
-		AppletStarter.gui.controller.setConnectButtonText("Connect");
-		AppletStarter.gui.controller.setConnectButtonEnabled(true);
+		App.gui.controller.enableConnectionDataFields();
+		App.gui.controller.setConnectionStatus("Disconnected");
+		App.gui.controller.setConnectButtonText("Connect");
+		App.gui.controller.setConnectButtonEnabled(true);
 		
-		if (!active && AppletStarter.gui.controller.isAutoReconnectActive() && reconnect) {
+		if (!active && App.gui.controller.isAutoReconnectActive() && reconnect) {
 			if (reconnectTries < 1) {
-				AppletStarter.logger.i("Reconnecting...", null);
+				App.logger.i("Reconnecting...", null);
 				GeneralTabActions.connectButtonPressed();
 				reconnectTries ++;
 				
 				return;
 			}
-			AppletStarter.logger.i("Client will not reconnect", null);
+			App.logger.i("Client will not reconnect", null);
 		}
 		
 	}

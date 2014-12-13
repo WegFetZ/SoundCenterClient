@@ -6,7 +6,7 @@ import javax.swing.JFrame;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 
-import com.soundcenter.soundcenter.client.AppletStarter;
+import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.client.gui.dialogs.AddStationDialog;
 import com.soundcenter.soundcenter.client.gui.dialogs.EditSongsDialog;
@@ -27,8 +27,8 @@ public class StationsTabActions {
 	/* ---------------------- Stations Tab ------------------------- */
 	
 	public static void stationChooserSelected() {
-		JComboBox playerComboBox = AppletStarter.gui.stationsTab.playerComboBox;
-		JComboBox typeComboBox = AppletStarter.gui.stationsTab.typeComboBox;
+		JComboBox playerComboBox = App.gui.stationsTab.playerComboBox;
+		JComboBox typeComboBox = App.gui.stationsTab.typeComboBox;
 		
 		DefaultListModel model = null;
 		ListCellRenderer renderer = null;
@@ -64,55 +64,55 @@ public class StationsTabActions {
 			}
 			
 			if (model != null && renderer != null) {
-				AppletStarter.gui.stationsTab.stationList.setCellRenderer(null);
-				AppletStarter.gui.stationsTab.stationList.setModel(model);
-				AppletStarter.gui.stationsTab.stationList.setCellRenderer(renderer);
+				App.gui.stationsTab.stationList.setCellRenderer(null);
+				App.gui.stationsTab.stationList.setModel(model);
+				App.gui.stationsTab.stationList.setCellRenderer(renderer);
 			} else {
-				AppletStarter.gui.stationsTab.stationList.setModel(new DefaultListModel());
+				App.gui.stationsTab.stationList.setModel(new DefaultListModel());
 			}
 			
 			if (player.equals(Client.userName)) {
-				AppletStarter.gui.stationsTab.addButton.setEnabled(addButtonEnabled);
-				AppletStarter.gui.stationsTab.editButton.setEnabled(true);
-				AppletStarter.gui.stationsTab.deleteButton.setEnabled(true);
+				App.gui.stationsTab.addButton.setEnabled(addButtonEnabled);
+				App.gui.stationsTab.editButton.setEnabled(true);
+				App.gui.stationsTab.deleteButton.setEnabled(true);
 			} else {
-				AppletStarter.gui.stationsTab.addButton.setEnabled(false);
+				App.gui.stationsTab.addButton.setEnabled(false);
 				if (Client.database.permissionGranted("sc.others.edit")) {
-					AppletStarter.gui.stationsTab.editButton.setEnabled(true);
+					App.gui.stationsTab.editButton.setEnabled(true);
 				} else {
-					AppletStarter.gui.stationsTab.editButton.setEnabled(false);
+					App.gui.stationsTab.editButton.setEnabled(false);
 				}
 				if (Client.database.permissionGranted("sc.others.delete")) {
-					AppletStarter.gui.stationsTab.deleteButton.setEnabled(true);
+					App.gui.stationsTab.deleteButton.setEnabled(true);
 				} else {
-					AppletStarter.gui.stationsTab.deleteButton.setEnabled(false);
+					App.gui.stationsTab.deleteButton.setEnabled(false);
 				}
 			}
 		} else {
-			AppletStarter.gui.stationsTab.stationList.setModel(new DefaultListModel());
-			AppletStarter.gui.stationsTab.addButton.setEnabled(false);
-			AppletStarter.gui.stationsTab.editButton.setEnabled(false);
-			AppletStarter.gui.stationsTab.deleteButton.setEnabled(false);
+			App.gui.stationsTab.stationList.setModel(new DefaultListModel());
+			App.gui.stationsTab.addButton.setEnabled(false);
+			App.gui.stationsTab.editButton.setEnabled(false);
+			App.gui.stationsTab.deleteButton.setEnabled(false);
 		}
 	}	
 	
 	public static void listSelectionChanged() {
-		Station station = (Station) AppletStarter.gui.stationsTab.stationList.getSelectedValue();
+		Station station = (Station) App.gui.stationsTab.stationList.getSelectedValue();
 		
 		if (station != null) {
-			AppletStarter.gui.stationsTab.muteCheckBox.setEnabled(true);
-			AppletStarter.gui.stationsTab.muteCheckBox.setSelected(	
+			App.gui.stationsTab.muteCheckBox.setEnabled(true);
+			App.gui.stationsTab.muteCheckBox.setSelected(	
 					Client.database.isMuted(station.getType(), station.getId()));
 		} else {
-			AppletStarter.gui.stationsTab.muteCheckBox.setEnabled(false);
-			AppletStarter.gui.stationsTab.muteCheckBox.setSelected(false);
+			App.gui.stationsTab.muteCheckBox.setEnabled(false);
+			App.gui.stationsTab.muteCheckBox.setSelected(false);
 		}
 	}
 	
 	public static void editStationButtonPressed() {
-		byte type = (byte) AppletStarter.gui.stationsTab.typeComboBox.getSelectedIndex();
+		byte type = (byte) App.gui.stationsTab.typeComboBox.getSelectedIndex();
 		
-		Station station = (Station) AppletStarter.gui.stationsTab.stationList.getSelectedValue();
+		Station station = (Station) App.gui.stationsTab.stationList.getSelectedValue();
 		if (station != null) {
 			EditStationDialog editDialog = new EditStationDialog(new JFrame(), type, station);
 			editDialog.setVisible(true);
@@ -120,7 +120,7 @@ public class StationsTabActions {
 	}
 	
 	public static void addStationButtonPressed() {
-		byte type = (byte) AppletStarter.gui.stationsTab.typeComboBox.getSelectedIndex();
+		byte type = (byte) App.gui.stationsTab.typeComboBox.getSelectedIndex();
 		
 		if (type >= 0) {
 			AddStationDialog addDialog = new AddStationDialog(new JFrame(), type);
@@ -130,7 +130,7 @@ public class StationsTabActions {
 	
 	public static void deleteStationButtonPressed() {
 		
-		Station station = (Station) AppletStarter.gui.stationsTab.stationList.getSelectedValue();
+		Station station = (Station) App.gui.stationsTab.stationList.getSelectedValue();
 		
 		if (station != null) {
 			Client.tcpClient.sendPacket(TcpOpcodes.SV_DATA_CMD_DELETE_STATION, station.getType(), station.getId());
@@ -138,13 +138,13 @@ public class StationsTabActions {
 	}
 	
 	public static void muteCheckBoxSelected() {
-		Station station = (Station) AppletStarter.gui.stationsTab.stationList.getSelectedValue();
+		Station station = (Station) App.gui.stationsTab.stationList.getSelectedValue();
 		if (station == null) {
 			return;
 		}
-		if (AppletStarter.gui.stationsTab.muteCheckBox.isSelected()) {
+		if (App.gui.stationsTab.muteCheckBox.isSelected()) {
 			Client.database.addMutedStation(station.getType(), station.getId());
-			AppletStarter.audioManager.stopPlayer(station.getType(), station.getId());
+			App.audioManager.stopPlayer(station.getType(), station.getId());
 		} else {
 			Client.database.removeMutedStation(station.getType(), station.getId());
 		}
@@ -184,7 +184,7 @@ public class StationsTabActions {
 			}
 			station.setPriority(priority);
 		} catch (NumberFormatException e) {
-			AppletStarter.logger.i("Could not edit range or priority of station. Invalid integer-value.", null);
+			App.logger.i("Could not edit range or priority of station. Invalid integer-value.", null);
 		}
 		station.setEditableByOthers(dialog.editableByOthersCheckBox.isSelected());
 		station.setRadio(dialog.radioCheckBox.isSelected());

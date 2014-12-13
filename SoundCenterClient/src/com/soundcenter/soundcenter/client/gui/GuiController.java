@@ -1,6 +1,6 @@
 package com.soundcenter.soundcenter.client.gui;
 
-import com.soundcenter.soundcenter.client.AppletStarter;
+import com.soundcenter.soundcenter.client.App;
 
 public class GuiController {
 	
@@ -69,12 +69,12 @@ public class GuiController {
 		mainPanel.generalTab.statusLabel.setText(text);
 	}
 	
-	public void setMasterVolume(int value, boolean updateSlider) {
+	public void setMasterVolume(byte value, boolean updateSlider) {
 		if (updateSlider) {
 			mainPanel.generalTab.volumeSlider.setValue(value);
 		}
 		mainPanel.generalTab.volumeLabel.setText(String.valueOf(value));
-		AppletStarter.audioManager.volumeManager.setMasterVolume(value);
+		App.audioManager.volumeManager.setMasterVolume(value);
 	}
 	public int getMasterVolume() {
 		return mainPanel.generalTab.volumeSlider.getValue();

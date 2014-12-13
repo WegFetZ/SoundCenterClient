@@ -7,7 +7,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
-import com.soundcenter.soundcenter.client.AppletStarter;
+import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.udp.UdpOpcodes;
@@ -33,10 +33,10 @@ public class UdpClient implements Runnable {
 			datagramSocket.setSoTimeout(10000);
 			new Thread(udpProcessor).start();
 			
-			AppletStarter.logger.i("UDP-Client started.", null);
+			App.logger.i("UDP-Client started.", null);
 			
 		} catch (SocketException e) {
-			AppletStarter.logger.w("Error while creating UDP-Socket. Is another instance of SoundCenter running?:", e);
+			App.logger.w("Error while creating UDP-Socket. Is another instance of SoundCenter running?:", e);
 			exit = true;
 		}
 	}
@@ -45,7 +45,7 @@ public class UdpClient implements Runnable {
 		Thread.currentThread().setName("UdpClient");
 		
 		if (active) {
-			AppletStarter.logger.i("Cannot start a new UDP-Client session while another is active.", null);
+			App.logger.i("Cannot start a new UDP-Client session while another is active.", null);
 			return;
 		}
 		
@@ -60,14 +60,14 @@ public class UdpClient implements Runnable {
 				udpProcessor.queue(receivedPacket.getData());
 			} catch (SocketTimeoutException e) {
 				if (Client.initialized) {
-					AppletStarter.logger.w("Client is not receiving UDP-Packets!", null);					
+					App.logger.w("Client is not receiving UDP-Packets!", null);
 				}
 				// send a udp heartbeat packet
 				byte[] packetData = new byte[1];
 				Client.udpClient.sendData(packetData, UdpOpcodes.TYPE_HEARTBEAT);
 			} catch (IOException e) {
 				if (!exit) {
-					AppletStarter.logger.i("Error while receiving UDP-Packet:", e);
+					App.logger.i("Error while receiving UDP-Packet:", e);
 					Client.reconnect = true;
 				}
 				exit = true;
@@ -76,7 +76,7 @@ public class UdpClient implements Runnable {
 		
 		active = false;
 		Client.shutdown();
-		AppletStarter.logger.i("UDP-Client was shut down!", null);
+		App.logger.i("UDP-Client was shut down!", null);
 	}
 	
 	public void sendData(byte[] data, byte type) {
@@ -93,7 +93,7 @@ public class UdpClient implements Runnable {
 				datagramSocket.send(packet);
 			}
 		} catch (IOException e) {
-			AppletStarter.logger.i("Error while sending UDP-Packet:", e);
+			App.logger.i("Error while sending UDP-Packet:", e);
 		}
 	}
 	

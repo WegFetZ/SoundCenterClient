@@ -22,7 +22,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.soundcenter.soundcenter.client.AppletStarter;
+import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.gui.actions.GeneralTabActions;
 import com.soundcenter.soundcenter.client.util.GuiUtil;
 
@@ -100,7 +100,7 @@ public class GeneralTab extends JPanel {
 		volumeSlider.addChangeListener(new ChangeListener() {
 	        @Override
 	        public void stateChanged(ChangeEvent ce) {
-	            AppletStarter.gui.controller.setMasterVolume(volumeSlider.getValue(), false);
+	            App.gui.controller.setMasterVolume((byte) volumeSlider.getValue(), false);
 	        }
 	    });
 

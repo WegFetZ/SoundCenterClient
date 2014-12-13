@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
-import com.soundcenter.soundcenter.client.AppletStarter;
+import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.data.Song;
@@ -299,7 +299,7 @@ public class Database implements Serializable{
 	}
 	
 	public void deleteOldSongs() {
-		List<File> fileList = FileOperation.listAllFiles(new File(AppletStarter.dataFolder + "musicdata"));
+		List<File> fileList = FileOperation.listAllFiles(new File(App.dataFolder + "musicdata"));
 		for (File file : fileList) {
 			String path = file.getParentFile().getName() + File.separator + file.getName();
 			if (!file.isDirectory() && !songs.containsKey(path)) {
@@ -360,8 +360,8 @@ public class Database implements Serializable{
 	
 	public void updateStationsTab(String player, String type, DefaultListModel listModel) {
 		if (listModel != null) {
-			DefaultComboBoxModel typeChooserModel = (DefaultComboBoxModel) AppletStarter.gui.stationsTab.typeComboBox.getModel();
-			DefaultComboBoxModel playerChooserModel = (DefaultComboBoxModel) AppletStarter.gui.stationsTab.playerComboBox.getModel();
+			DefaultComboBoxModel typeChooserModel = (DefaultComboBoxModel) App.gui.stationsTab.typeComboBox.getModel();
+			DefaultComboBoxModel playerChooserModel = (DefaultComboBoxModel) App.gui.stationsTab.playerComboBox.getModel();
 			if (playerChooserModel.getIndexOf(player) < 0) {
 				if (player.equals(Client.userName)) {
 					playerChooserModel.insertElementAt(player, 0);
@@ -378,13 +378,13 @@ public class Database implements Serializable{
 		} else if (!areaModels.containsKey(player) && !boxModels.containsKey(player) 
 					&& !biomeModels.containsKey(player) && !worldModels.containsKey(player) 
 					&& !player.equals(Client.userName)) {
-			AppletStarter.gui.stationsTab.playerComboBox.removeItem(player);
+			App.gui.stationsTab.playerComboBox.removeItem(player);
 		}
 	}
 		
 	public void updateMusicTab(String player, DefaultListModel listModel) {
 		if (listModel != null) {
-			DefaultComboBoxModel chooserModel = (DefaultComboBoxModel) AppletStarter.gui.musicTab.playerComboBox.getModel();
+			DefaultComboBoxModel chooserModel = (DefaultComboBoxModel) App.gui.musicTab.playerComboBox.getModel();
 			if (chooserModel.getIndexOf(player) < 0) {
 				if (player.equals(Client.userName)) {
 					chooserModel.insertElementAt(player, 0);
@@ -398,7 +398,7 @@ public class Database implements Serializable{
 			}
 			
 		} else if (!songModels.containsKey(player) && !player.equals(Client.userName)) {
-			AppletStarter.gui.musicTab.playerComboBox.removeItem(player);
+			App.gui.musicTab.playerComboBox.removeItem(player);
 		}
 	}
 	
@@ -440,12 +440,12 @@ public class Database implements Serializable{
 		songModels.clear();
 		permissions.clear();
 		
-		DefaultComboBoxModel playerMusicModel = (DefaultComboBoxModel) AppletStarter.gui.musicTab.playerComboBox.getModel();
-		DefaultComboBoxModel playerStationsModel = (DefaultComboBoxModel) AppletStarter.gui.stationsTab.playerComboBox.getModel();
+		DefaultComboBoxModel playerMusicModel = (DefaultComboBoxModel) App.gui.musicTab.playerComboBox.getModel();
+		DefaultComboBoxModel playerStationsModel = (DefaultComboBoxModel) App.gui.stationsTab.playerComboBox.getModel();
 		playerMusicModel.setSelectedItem(null);
-		AppletStarter.gui.musicTab.playerComboBox.removeAllItems();
+		App.gui.musicTab.playerComboBox.removeAllItems();
 		playerStationsModel.setSelectedItem(null);
-		AppletStarter.gui.stationsTab.playerComboBox.removeAllItems();
+		App.gui.stationsTab.playerComboBox.removeAllItems();
 	}
 		
 }

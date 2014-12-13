@@ -3,7 +3,7 @@ package com.soundcenter.soundcenter.client.network.udp;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.soundcenter.soundcenter.client.AppletStarter;
+import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.udp.UdpOpcodes;
@@ -55,15 +55,15 @@ public class UdpProcessor implements Runnable {
 		
 		if (packet.getType() == UdpOpcodes.INFO_LOCATION) {		/* location update */
 			//AppletStarter.logger.d("Location info: World: " + packet.getLocation().getWorld() + " X:" + packet.getLocation().getX() + " Y:" + packet.getLocation().getY()  + " Z:" + packet.getLocation().getZ(), null);
-			Client.statusUpdater.setLocation(packet.getLocation());
+			Client.mainLoop.setLocation(packet.getLocation());
 			
 		} else if (isInGroup(packet.getType(), UdpOpcodes.GROUP_STREAM, UdpOpcodes.GROUP_END_STREAM)) {	/* music or voice stream */
 			//AppletStarter.logger.d("Player info: Type: " + packet.getType() + " Creator: " + packet.getID() + " Volume: " + packet.getVolume(), null);
-			AppletStarter.audioManager.feedPacket(packet);
+			App.audioManager.feedPacket(packet);
 			
 			//volume for voice gets calculated on the server, so we have to set it here
 			if (packet.getType() == UdpOpcodes.TYPE_VOICE) {
-				AppletStarter.audioManager.volumeManager.setPlayerVolume(packet.getType(), packet.getID(), packet.getVolume());
+				App.audioManager.volumeManager.setPlayerVolume(packet.getType(), packet.getID(), packet.getVolume());
 			}
 		}				
 	}
