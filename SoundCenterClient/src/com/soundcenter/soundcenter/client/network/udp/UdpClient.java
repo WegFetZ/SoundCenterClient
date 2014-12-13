@@ -60,7 +60,7 @@ public class UdpClient implements Runnable {
 				udpProcessor.queue(receivedPacket.getData());
 			} catch (SocketTimeoutException e) {
 				if (Client.initialized) {
-					App.logger.w("Client is not receiving UDP-Packets!", null);
+					App.logger.d("Client has not received an UDP packet for 10seconds!", null);
 				}
 				// send a udp heartbeat packet
 				byte[] packetData = new byte[1];

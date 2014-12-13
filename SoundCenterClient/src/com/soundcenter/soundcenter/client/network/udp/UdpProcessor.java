@@ -34,7 +34,7 @@ public class UdpProcessor implements Runnable {
 	
 	private void process(UdpPacket packet) {
 		
-		//AppletStarter.logger.d("Received Udp-Message: IDENT: " + packet.getIdent() + " Sequence: " + packet.getSeq() + " DestUser: " + packet.getDestUserID() + " Type: " + packet.getType(), null);
+		//App.logger.d("Received Udp-Message: IDENT: " + packet.getIdent() + " Sequence: " + packet.getSeq() + " DestUser: " + packet.getDestUserID() + " Type: " + packet.getType(), null);
 		
 		//return if ident number is wrong
 		if (packet.getIdent() != GlobalConstants.UDP_IDENT) {
