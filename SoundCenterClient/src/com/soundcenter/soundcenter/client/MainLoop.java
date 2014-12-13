@@ -18,8 +18,15 @@ public class MainLoop implements Runnable {
 	public void run() {
 		Thread.currentThread().setName("StatusUpdater");
 		
+		long timeA;
+		long timeB;
+		int delay;
+		
+		short id;
+		double dist;
+		
 		while(!exit) {
-			long timeA = System.currentTimeMillis();
+			timeA = System.currentTimeMillis();
 			
 			if (location != null && App.audioManager.isMusicActive()) {
 				HashMap<Short, Double> boxesInRange = IntersectionDetection.getBoxesInRange(location);
@@ -31,59 +38,59 @@ public class MainLoop implements Runnable {
 				
 				/* update box players */
 				for (Entry<Short, PlayerController> entry : App.audioManager.boxPlayers.entrySet()) {
-					short id = entry.getKey();
+					id = entry.getKey();
 	
 					if (!boxesInRange.containsKey(id)) {
 						App.audioManager.stopPlayer(GlobalConstants.TYPE_BOX, id);
 					}
 				}
 				for (Entry<Short, Double> entry : boxesInRange.entrySet()) {
-					short id = entry.getKey();
-					double dist = entry.getValue();
+					id = entry.getKey();
+					dist = entry.getValue();
 					App.audioManager.updatePlayer(GlobalConstants.TYPE_BOX, id, dist);
 				}
 				
 				/* update area players */
 				for (Entry<Short, PlayerController> entry : App.audioManager.areaPlayers.entrySet()) {
-					short id = entry.getKey();
+					id = entry.getKey();
 					
 					if (!areasInRange.containsKey(id)) {					
 						App.audioManager.stopPlayer(GlobalConstants.TYPE_AREA, id);
 					}
 				}
 				for (Entry<Short, Double> entry : areasInRange.entrySet()) {
-					short id = entry.getKey();
-					double dist = entry.getValue();
+					id = entry.getKey();
+					dist = entry.getValue();
 					App.audioManager.updatePlayer(GlobalConstants.TYPE_AREA, id, dist);
 				}
 				
 				/* update biome players */
 				for (Entry<Short, PlayerController> entry : App.audioManager.biomePlayers.entrySet()) {
-					short id = entry.getKey();
+					id = entry.getKey();
 	
 					if (!biomesInRange.contains(id)) {					
 						App.audioManager.stopPlayer(GlobalConstants.TYPE_BIOME, id);
 					}
 				}
-				for (short id : biomesInRange) {	
-					App.audioManager.updatePlayer(GlobalConstants.TYPE_BIOME, id, 0);
+				for (short biomeId : biomesInRange) {	
+					App.audioManager.updatePlayer(GlobalConstants.TYPE_BIOME, biomeId, 0);
 				}
 				
 				/* update world players */
 				for (Entry<Short, PlayerController> entry : App.audioManager.worldPlayers.entrySet()) {
-					short id = entry.getKey();
+					id = entry.getKey();
 	
 					if (!worldsInRange.contains(id)) {					
 						App.audioManager.stopPlayer(GlobalConstants.TYPE_WORLD, id);
 					}
 				}
-				for (short id : worldsInRange) {	
-					App.audioManager.updatePlayer(GlobalConstants.TYPE_WORLD, id, 0);
+				for (short worldId : worldsInRange) {	
+					App.audioManager.updatePlayer(GlobalConstants.TYPE_WORLD, worldId, 0);
 				}
 			}
 			
-			long timeB = System.currentTimeMillis();
-			int delay = (50) - (int) (timeB - timeA);
+			timeB = System.currentTimeMillis();
+			delay = (50) - (int) (timeB - timeA);
 			
 			if (delay < 0)
 				delay = 0;
