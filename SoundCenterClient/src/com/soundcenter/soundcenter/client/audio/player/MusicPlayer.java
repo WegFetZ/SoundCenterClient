@@ -16,7 +16,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import com.soundcenter.soundcenter.client.AppletStarter;
+import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.udp.UdpPacket;
 
@@ -83,7 +83,7 @@ public class MusicPlayer extends PlayerController {
 			close();
 		}
 		
-		AppletStarter.logger.d("MusicSession ID: " + playerId + " closed.", null);
+		App.logger.d("MusicSession ID: " + playerId + " closed.", null);
 	}	
 	
 	//TODO fix exception on player reset
@@ -109,7 +109,7 @@ public class MusicPlayer extends PlayerController {
 				streamOut = new BufferedOutputStream(pipeOut);
 				streamIn = new BufferedInputStream(pipeIn);
 			} catch (IOException e) {
-				AppletStarter.logger.i("Error while creating pipes for music player", e);
+				App.logger.i("Error while creating pipes for music player", e);
 				stopPlayer();
 			}
 		}
@@ -143,12 +143,12 @@ public class MusicPlayer extends PlayerController {
 				}
 			} catch (LineUnavailableException e) {
 				if (!stop && ! exit)
-					AppletStarter.logger.i("Error while playing music stream:", e);
+					App.logger.i("Error while playing music stream:", e);
 			} catch (IOException e) {
 				if (!stop && ! exit)
-					AppletStarter.logger.i("Error while writing to sourceDataLine:", e);
+					App.logger.i("Error while writing to sourceDataLine:", e);
 			} catch (UnsupportedAudioFileException e) {
-				AppletStarter.logger.i("Error while retrieving audio file format information:", e);
+				App.logger.i("Error while retrieving audio file format information:", e);
 			}
 			
 			if (!stop) {
@@ -179,8 +179,9 @@ public class MusicPlayer extends PlayerController {
 			ampGainDB = ((10.0f/20.0f)*volumeControl.getMaximum()) - volumeControl.getMinimum();
 			cste = Math.log(10.0)/20;
 			
-			if (type == GlobalConstants.TYPE_AREA || type == GlobalConstants.TYPE_BOX) {
+			if (type != GlobalConstants.TYPE_VOICE && type != GlobalConstants.TYPE_GLOBAL) {
 				volumeControl.setValue((float) minGainDB);
+				MusicPlayer.this.oldVolume = 0;
 			}
 			
 			line.start();
@@ -193,7 +194,7 @@ public class MusicPlayer extends PlayerController {
 				streamOut.write(data);
 			} catch(IOException e) {
 				if (!stop && !exit)
-					AppletStarter.logger.d("Error while writing song data to musicplayer.", e);
+					App.logger.d("Error while writing song data to musicplayer.", e);
 				player.stopPlayer();
 			}
 		}

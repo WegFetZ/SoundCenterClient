@@ -3,7 +3,9 @@ package com.soundcenter.soundcenter.client.audio;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 
+import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.audio.player.PlayerController;
 
 public class VolumeManager {
@@ -53,8 +55,27 @@ public class VolumeManager {
 		highestPriority = min;
 	}
 	
-	public void setMasterVolume(int value) {
+	public byte getMasterVolume() {
+		return (byte) masterVolume;
+	}
+	
+	public void setMasterVolume(byte value) {
 		masterVolume = value;
+		
+		// update volume for biomes, worlds and global player
+		//TODO: when world/ biome borders are added, take care of them
+		/* update biome players */
+		for (Entry<Short, PlayerController> entry : App.audioManager.biomePlayers.entrySet()) {
+			setPlayerVolume(entry.getValue(), (byte) 100);
+		}
+		/* update world players */
+		for (Entry<Short, PlayerController> entry : App.audioManager.worldPlayers.entrySet()) {
+			setPlayerVolume(entry.getValue(), (byte) 100);
+		}
+		/* update global player */
+		if (audioManager.globalPlayer != null) {
+			setPlayerVolume(audioManager.globalPlayer, (byte) 100);
+		}
 	}
 	
 		public synchronized void addPriority(Integer value) {

@@ -11,7 +11,7 @@ import javax.sound.midi.Sequencer;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.SourceDataLine;
 
-import com.soundcenter.soundcenter.client.AppletStarter;
+import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.data.Station;
@@ -28,7 +28,7 @@ public class PlayerController extends Thread {
 	protected boolean firstPacketReceived = false;
 	protected ExecutorService volumeExecutor = Executors.newFixedThreadPool(1);
 	protected boolean fading = false;
-	protected int oldVolume = 0;
+	protected byte oldVolume = 0;
 	
 	protected Sequencer sequencer = null;
 	protected SourceDataLine line = null;
@@ -56,7 +56,7 @@ public class PlayerController extends Thread {
 			this.playerPriority = station.getPriority();
 		}
 		
-		AppletStarter.audioManager.volumeManager.addPriority(playerPriority);
+		App.audioManager.volumeManager.addPriority(playerPriority);
 	}
 	
 	
@@ -100,11 +100,11 @@ public class PlayerController extends Thread {
 		queue.add(packet);
 	}
 	
-	public int getVolume() {
+	public byte getVolume() {
 		return oldVolume;
 	}
 
-	public void setVolume(int value, boolean allowFade) {
+	public void setVolume(byte value, boolean allowFade) {
 		// do not set the volume before the first packet was received
 		// this is to prevent the volume from fading in before anything is played		
 		if (volumeControl != null && !fading && firstPacketReceived) { 
@@ -117,7 +117,6 @@ public class PlayerController extends Thread {
 			if (fade) {
 				fadeVolume(oldVolume, value);
 			} else {
-			
 				float valueDB = (float) (minGainDB + (1/cste)*Math.log(1+(Math.exp(cste*ampGainDB)-1)*(value/100.0f)));
 				volumeControl.setValue(valueDB);
 			}
@@ -131,12 +130,11 @@ public class PlayerController extends Thread {
 		if (volumeControl == null) {
 			return;
 		}
+		fading = true;
 		
 		Runnable fadeRunnable = new Runnable() {
 			@Override
 			public void run() {
-				fading = true;
-
 				//increase
 				if (from < to) {
 					for (int i = from; i <= (to - 1); i= i+1) {
@@ -158,8 +156,6 @@ public class PlayerController extends Thread {
 				fading = false;
 			}
 		};
-		
-		fading = true; // we need to set to true here already, else while loop won't run
 		volumeExecutor.execute(fadeRunnable);
 
 		while (fading) {
@@ -186,13 +182,13 @@ public class PlayerController extends Thread {
 		}
 		
 		//add the next player to the player list
-		AppletStarter.audioManager.putPlayer(type, playerId, nextPlayer);
+		App.audioManager.putPlayer(type, playerId, nextPlayer);
 		nextPlayer.start();
 	}
 	
 	public void setNextMidiPlayer(MidiNotificationPacket notification) {
 		nextPlayer = new MidiPlayer(notification.getType(), notification.getId()
-				, AppletStarter.dataFolder + "musicdata" + File.separator + notification.getPath()
+				, App.dataFolder + "musicdata" + File.separator + notification.getPath()
 				, notification.getBytesToSkip());
 		nextPlayer.setPlayerPriority(playerPriority);
 		
@@ -205,8 +201,8 @@ public class PlayerController extends Thread {
 	}
 	
 	public void close() {
-		AppletStarter.audioManager.removePlayer(type, playerId, this);
-		AppletStarter.audioManager.volumeManager.removePriority(playerPriority);
+		App.audioManager.removePlayer(type, playerId, this);
+		App.audioManager.volumeManager.removePriority(playerPriority);
 
 		fadeVolume(oldVolume, 0);
 		//wait for fadeout if close is called again from another thread
@@ -236,10 +232,10 @@ public class PlayerController extends Thread {
 				
 				//tell the server to stop streaming to us
 				if (type != GlobalConstants.TYPE_VOICE && type != GlobalConstants.TYPE_GLOBAL) {
-					PlayerController newPlayer = AppletStarter.audioManager.getPlayer(type, playerId);
+					PlayerController newPlayer = App.audioManager.getPlayer(type, playerId);
 					//do not stop streaming if a new player was created for this station
 					if (newPlayer == null || newPlayer.exit) {
-						AppletStarter.audioManager.sendStopCommand(type, playerId);
+						App.audioManager.sendStopCommand(type, playerId);
 					}
 				}
 				

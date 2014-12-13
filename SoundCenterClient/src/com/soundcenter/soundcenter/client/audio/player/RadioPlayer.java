@@ -12,7 +12,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import com.soundcenter.soundcenter.client.AppletStarter;
+import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 
 public class RadioPlayer extends PlayerController {
@@ -54,12 +54,12 @@ public class RadioPlayer extends PlayerController {
 			}
 		} catch (LineUnavailableException e) {
 			if (!exit)
-				AppletStarter.logger.i("Error while playing music stream:", e);
+				App.logger.i("Error while playing music stream:", e);
 		} catch (IOException e) {
 			if (!exit)
-				AppletStarter.logger.i("Error while writing to sourceDataLine:", e);
+				App.logger.i("Error while writing to sourceDataLine:", e);
 		} catch (UnsupportedAudioFileException e) {
-			AppletStarter.logger.i("Error while retrieving audio file format information:", e);
+			App.logger.i("Error while retrieving audio file format information:", e);
 		}
 
 		if (!exit) {
@@ -90,12 +90,13 @@ public class RadioPlayer extends PlayerController {
 		ampGainDB = ((10.0f / 20.0f) * volumeControl.getMaximum()) - volumeControl.getMinimum();
 		cste = Math.log(10.0) / 20;
 
-		if (type == GlobalConstants.TYPE_AREA || type == GlobalConstants.TYPE_BOX) {
+		if (type != GlobalConstants.TYPE_VOICE && type != GlobalConstants.TYPE_GLOBAL) {
 			volumeControl.setValue((float) minGainDB);
+			this.oldVolume = 0;
 		}
 		
 		line.start();
 
-		AppletStarter.logger.d("MusicPlayer SourceDataLine started!", null);
+		App.logger.d("MusicPlayer SourceDataLine started!", null);
 	}
 }

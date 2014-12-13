@@ -12,7 +12,8 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
-import com.soundcenter.soundcenter.client.AppletStarter;
+
+import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 
 public class MidiPlayer extends PlayerController {
@@ -36,7 +37,7 @@ public class MidiPlayer extends PlayerController {
 			
 			init();
 
-			AppletStarter.logger.d("Starting midi: " + filePath + " (pos: " + position + ") on " 
+			App.logger.d("Starting midi: " + filePath + " (pos: " + position + ") on " 
 			+ type + " (" + playerId + ").", null);
 
 				FileInputStream stream = new FileInputStream(filePath);
@@ -50,15 +51,15 @@ public class MidiPlayer extends PlayerController {
 
 		} catch (InvalidMidiDataException e) {
 			if (!exit)
-				AppletStarter.logger.i("Error while playing Midi:", e);
+				App.logger.i("Error while playing Midi:", e);
 			close();
 		} catch (FileNotFoundException e) {
 			if (!exit)
-				AppletStarter.logger.i("Error while playing Midi:", e);
+				App.logger.i("Error while playing Midi:", e);
 			close();
 		} catch (IOException e) {
 			if (!exit)
-				AppletStarter.logger.i("Error while playing Midi:", e);
+				App.logger.i("Error while playing Midi:", e);
 			close();
 		}
 		
@@ -71,8 +72,10 @@ public class MidiPlayer extends PlayerController {
 			receiver = MidiSystem.getReceiver();
 			sequencer.open();
 			sequencer.getTransmitter().setReceiver(receiver);
-			if (type == GlobalConstants.TYPE_AREA || type == GlobalConstants.TYPE_BOX) {
-				setVolume(0, false);
+			
+			if (type != GlobalConstants.TYPE_GLOBAL) {
+				setVolume((byte) 0, false);
+				this.oldVolume = 0;
 			}
 			
 			// add the MetaEventListener to listen for end of track
@@ -87,7 +90,7 @@ public class MidiPlayer extends PlayerController {
 		        });
 			
 		} catch (MidiUnavailableException e) {
-			AppletStarter.logger.i("Error while initializing MidiPlayer:", e);
+			App.logger.i("Error while initializing MidiPlayer:", e);
 		}
 	}
 	
@@ -96,11 +99,11 @@ public class MidiPlayer extends PlayerController {
 	}
 
 	@Override
-	public void setVolume(int value, boolean allowFade) {
+	public void setVolume(byte value, boolean allowFade) {
 		if (sequencer != null && sequencer.isOpen()) {
 			
 			//calculate value: f(x) = -0,0126x^2 + 2.53x 	(half range is 75% of volume)
-			final int vol = (int) (-0.0126*Math.pow(value, 2) + 2.53*value);
+			final byte vol = (byte) (-0.0126*Math.pow(value, 2) + 2.53*value);
 			
 			boolean fade = false;
 			if (allowFade && Math.abs(oldVolume - value) > 20) {
@@ -160,7 +163,7 @@ public class MidiPlayer extends PlayerController {
 				message.setMessage(ShortMessage.CONTROL_CHANGE, i, 7, vol);
 				receiver.send(message, -1);
 			} catch (InvalidMidiDataException e) {
-				AppletStarter.logger.d("Error while setting midi volume.", e);
+				App.logger.d("Error while setting midi volume.", e);
 			}
 		}
 	}
@@ -169,7 +172,7 @@ public class MidiPlayer extends PlayerController {
 	public void close() {
 		super.close();
 		
-		AppletStarter.logger.d("MidiPlayer " + type + " (" + playerId + ") closed.", null);
+		App.logger.d("MidiPlayer " + type + " (" + playerId + ") closed.", null);
 	}
 
 }

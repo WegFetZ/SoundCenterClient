@@ -3,7 +3,7 @@ package com.soundcenter.soundcenter.client.audio;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.soundcenter.soundcenter.client.AppletStarter;
+import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.client.audio.player.MusicPlayer;
 import com.soundcenter.soundcenter.client.audio.player.MidiPlayer;
@@ -92,6 +92,8 @@ public class AudioManager {
 			} else {
 				volumeManager.setPlayerVolume(controller, (byte) 100);
 			}
+		} else if (type == GlobalConstants.TYPE_WORLD || type == GlobalConstants.TYPE_BIOME) {
+			volumeManager.setPlayerVolume(controller, (byte) 100);
 		}
 	}
 	
@@ -108,22 +110,22 @@ public class AudioManager {
 	}
 
 	public void setVoiceActive(boolean value) {
-		AppletStarter.gui.controller.setVoiceActive(value);
+		App.gui.controller.setVoiceActive(value);
 		if (!value) {
 			stopVoice();
 		}
 	}
 	public boolean isVoiceActive() {
-		return AppletStarter.gui.controller.isVoiceActive();
+		return App.gui.controller.isVoiceActive();
 	}
 	public void setMusicActive(boolean value) {
-		AppletStarter.gui.controller.setMusicActive(value);
+		App.gui.controller.setMusicActive(value);
 		if (!value) {
 			stopMusic();
 		}
 	}
 	public boolean isMusicActive() {
-		return AppletStarter.gui.controller.isMusicActive();
+		return App.gui.controller.isMusicActive();
 	}
 
 	public boolean isPlayingGlobally() {
@@ -133,7 +135,7 @@ public class AudioManager {
 	public boolean playersOverlap() {
 		//ceck if there is more than one player (excluding speex players)
 		int players = (areaPlayers.size() + boxPlayers.size() + biomePlayers.size() + worldPlayers.size());
-		return players > 1;
+		return players > 1 || (players == 1 && globalPlayer != null);
 	}
 
 	public PlayerController getPlayer(byte type, short id) {
@@ -174,13 +176,13 @@ public class AudioManager {
 		
 		if (type == GlobalConstants.TYPE_GLOBAL) {
 			globalPlayer = null;
-			AppletStarter.gui.controller.setPlayButtonText("Play Globally");
+			App.gui.controller.setPlayButtonText("Play Globally");
 		}
 	}
 	
 	private PlayerController createNewPlayer(byte type, short id) {
 		
-		AppletStarter.logger.d("Creating new player. Type: " + type + " id: " + id, null);
+		App.logger.d("Creating new player. Type: " + type + " id: " + id, null);
 		
 		PlayerController controller = null;
 		
@@ -200,7 +202,7 @@ public class AudioManager {
 		}
 		
 		if (type == GlobalConstants.TYPE_GLOBAL) {
-			AppletStarter.gui.controller.setPlayButtonText("Stop Globally");
+			App.gui.controller.setPlayButtonText("Stop Globally");
 			controller = new MusicPlayer(type, id);
 			
 			globalPlayer = controller;
@@ -271,7 +273,9 @@ public class AudioManager {
 				biomePlayers.clear();
 				worldPlayers.clear();
 				globalPlayer = null;
-				AppletStarter.gui.controller.setPlayButtonText("Play Globally");
+				if (App.gui != null) {
+					App.gui.controller.setPlayButtonText("Play Globally");
+				}
 			}
 		}).start();
 	}
