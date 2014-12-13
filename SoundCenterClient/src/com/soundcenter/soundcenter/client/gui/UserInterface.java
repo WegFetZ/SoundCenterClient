@@ -5,8 +5,10 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
+
 import javax.swing.ImageIcon;
 import javax.swing.JApplet;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -53,6 +55,11 @@ public class UserInterface extends JPanel {
 		applet.setGlassPane(glassPane);
 	}
 	
+	public void createGlassPane(JFrame frame) {
+		glassPane = new DisabledGlassPane();
+		
+		frame.setGlassPane(glassPane);
+	}
 	
 	private class DisabledGlassPane extends JPanel {
 		
