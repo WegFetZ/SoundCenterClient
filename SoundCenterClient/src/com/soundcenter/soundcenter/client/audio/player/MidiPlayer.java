@@ -102,6 +102,9 @@ public class MidiPlayer extends PlayerController {
 	public void setVolume(int value, boolean allowFade) {
 		if (sequencer != null && sequencer.isOpen()) {
 			
+			//we want to take care of our max volume
+			value = (int) ((double)value*((double)maxVolume/100.d));
+			
 			//calculate value: f(x) = -0,0126x^2 + 2.53x 	(half range is 75% of volume)
 			final int vol = (int)(-0.0126*Math.pow(value, 2) + 2.53*value);
 

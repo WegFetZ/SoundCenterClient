@@ -28,6 +28,7 @@ public class PlayerController extends Thread {
 	protected boolean firstPacketReceived = false;
 	protected ExecutorService volumeExecutor = Executors.newFixedThreadPool(1);
 	protected boolean fading = false;
+	protected byte maxVolume = 100;
 	protected int oldVolume = 0;
 	
 	protected Sequencer sequencer = null;
@@ -54,6 +55,7 @@ public class PlayerController extends Thread {
 		this.station = Client.database.getStation(type, playerId); 
 		if (station != null) {
 			this.playerPriority = station.getPriority();
+			this.maxVolume = station.getMaxVolume();
 		}
 		
 		App.audioManager.volumeManager.addPriority(playerPriority);
@@ -108,6 +110,9 @@ public class PlayerController extends Thread {
 		// do not set the volume before the first packet was received
 		// this is to prevent the volume from fading in before anything is played		
 		if (volumeControl != null && !fading && firstPacketReceived) { 
+			
+			//we want to take care of our max volume
+			value = (int) ((double)value*((double)maxVolume/100.d));
 			
 			boolean fade = false;
 			if (allowFade && Math.abs(oldVolume - value) > 10) {
