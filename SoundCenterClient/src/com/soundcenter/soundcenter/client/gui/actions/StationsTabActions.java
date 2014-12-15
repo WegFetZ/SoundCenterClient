@@ -176,7 +176,9 @@ public class StationsTabActions {
 				int range = Integer.parseInt(dialog.rangeField.getText());
 				station.setRange(range);
 			}
-			byte priority = (byte) Integer.parseInt(dialog.priorityField.getText());
+			byte maxVolume = (byte) dialog.maxVolumeSlider.getValue();
+			station.setMaxVolume(maxVolume);
+			byte priority = (byte) Byte.parseByte(dialog.priorityField.getText());
 			if (priority < 1) {
 				priority = 1;
 			} else if (priority > 10) {
