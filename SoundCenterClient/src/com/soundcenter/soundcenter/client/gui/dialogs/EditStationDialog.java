@@ -16,12 +16,14 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.gui.actions.StationsTabActions;
 import com.soundcenter.soundcenter.client.gui.renderer.SongListCellRenderer;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
@@ -39,10 +41,13 @@ public class EditStationDialog extends JDialog {
 	public JLabel ownerLabel = new JLabel("");
 	public JLabel locationLabel = new JLabel("");
 	public JLabel worldLabel = new JLabel("");
+	public JLabel maxVolumeLabel = new JLabel("100");
 	
 	public JTextField rangeField = new JTextField("25");
 	public JTextField priorityField = new JTextField("1");
 	public JTextField urlField = new JTextField();
+	
+	public JSlider maxVolumeSlider = new JSlider();
 	
 	public JCheckBox editableByOthersCheckBox = new JCheckBox("Station is editable by others.");
 	public JCheckBox radioCheckBox = new JCheckBox("Play webradio on this station");
@@ -65,6 +70,8 @@ public class EditStationDialog extends JDialog {
 		priorityField.setPreferredSize(new Dimension(40, 25));
 		urlField.setPreferredSize(new Dimension(140, 25));
 		
+		maxVolumeSlider.setValue(100);
+		
 		songList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		songList.setLayoutOrientation(JList.VERTICAL);
 		songList.setVisibleRowCount(-1);
@@ -76,6 +83,14 @@ public class EditStationDialog extends JDialog {
 		
 		//Actions
 		final EditStationDialog frame = this;
+		
+		maxVolumeSlider.addChangeListener(new ChangeListener() {
+	        @Override
+	        public void stateChanged(ChangeEvent ce) {
+	            maxVolumeLabel.setText(String.valueOf(maxVolumeSlider.getValue()));
+	        }
+	    });
+		
 		editSongsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				StationsTabActions.editStationDialogEditSonglistButtonPressed(frame);
@@ -177,7 +192,19 @@ public class EditStationDialog extends JDialog {
 			
 			pane.add(Box.createRigidArea(new Dimension(0,10)));
 		}
+		
+		Box maxVolumeBox = Box.createHorizontalBox();
+			JLabel maxVolumeTitleLabel = new JLabel("Maximum Volume: ");
+			maxVolumeLabel.setPreferredSize(new Dimension(100, 20));
+			maxVolumeBox.add(maxVolumeTitleLabel);
+			maxVolumeBox.add(maxVolumeSlider);
+			maxVolumeBox.add(Box.createRigidArea(new Dimension(5,0)));
+			maxVolumeBox.add(maxVolumeLabel);
+			maxVolumeBox.add(Box.createHorizontalGlue());
+		pane.add(maxVolumeBox);
 			
+		pane.add(Box.createRigidArea(new Dimension(0,15)));
+		
 		Box priorityBox = Box.createHorizontalBox();
 			JLabel priorityTitleLabel = new JLabel("Priority: ");
 			priorityTitleLabel.setPreferredSize(new Dimension(100, 20));
@@ -242,6 +269,8 @@ public class EditStationDialog extends JDialog {
 		//load common properties
 		idLabel.setText(String.valueOf(station.getId()));
 		ownerLabel.setText(station.getOwner());
+		maxVolumeLabel.setText(String.valueOf(station.getMaxVolume()));
+		maxVolumeSlider.setValue(station.getMaxVolume());
 		priorityField.setText(String.valueOf(station.getPriority()));
 		rangeField.setText(String.valueOf(station.getRange()));
 		editableByOthersCheckBox.setSelected(station.isEditableByOthers());
