@@ -63,7 +63,7 @@ public class RadioPlayer extends PlayerController {
 		}
 
 		if (!exit) {
-			close();
+			close(false);
 		}
 
 		try {

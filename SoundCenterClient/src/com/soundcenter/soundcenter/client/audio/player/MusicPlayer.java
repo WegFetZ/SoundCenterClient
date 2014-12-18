@@ -56,7 +56,7 @@ public class MusicPlayer extends PlayerController {
 				//quit when no packet arrives for 5 seconds
 				if (packet == null) {
 					//AppletStarter.logger.d("Player timed out. Closing...", null);
-					close();
+					close(false);
 					break;
 				}					
 					
@@ -80,7 +80,7 @@ public class MusicPlayer extends PlayerController {
 			player.stopPlayer();
 			startMidiPlayer();
 		} else {
-			close();
+			close(false);
 		}
 		
 		App.logger.d("MusicSession ID: " + playerId + " closed.", null);

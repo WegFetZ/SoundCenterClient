@@ -52,15 +52,15 @@ public class MidiPlayer extends PlayerController {
 		} catch (InvalidMidiDataException e) {
 			if (!exit)
 				App.logger.i("Error while playing Midi:", e);
-			close();
+			close(true);
 		} catch (FileNotFoundException e) {
 			if (!exit)
 				App.logger.i("Error while playing Midi:", e);
-			close();
+			close(true);
 		} catch (IOException e) {
 			if (!exit)
 				App.logger.i("Error while playing Midi:", e);
-			close();
+			close(true);
 		}
 		
 		//player gets removed in the close() method
@@ -84,7 +84,7 @@ public class MidiPlayer extends PlayerController {
 		            @Override
 		            public void meta(MetaMessage metaMsg) {
 		                if (metaMsg.getType() == 0x2F) {
-		                	close();
+		                	close(false);
 		                }
 		            }
 		        });
@@ -172,8 +172,8 @@ public class MidiPlayer extends PlayerController {
 	}
 	
 	@Override
-	public void close() {
-		super.close();
+	public void close(boolean preventRestart) {
+		super.close(preventRestart);
 		
 		App.logger.d("MidiPlayer " + type + " (" + playerId + ") closed.", null);
 	}

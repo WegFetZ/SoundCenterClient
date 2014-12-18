@@ -40,12 +40,7 @@ public class StationsTabActions {
 			if(type.equals("Areas")) {
 				model = Client.database.getAreaModel(player);
 				renderer = new AreaListCellRenderer();
-				/*
-				if (Client.database.permissionGranted("sc.set.area"))
-					addButtonEnabled = true;
-				//TODO: uncomment when support for worldguard areas is added
-				*/
-			
+
 			} else if(type.equals("Boxes")) {
 				model = Client.database.getBoxModel(player);
 				renderer = new BoxListCellRenderer();
@@ -144,7 +139,7 @@ public class StationsTabActions {
 		}
 		if (App.gui.stationsTab.muteCheckBox.isSelected()) {
 			Client.database.addMutedStation(station.getType(), station.getId());
-			App.audioManager.stopPlayer(station.getType(), station.getId());
+			App.audioManager.stopPlayer(station.getType(), station.getId(), true);
 		} else {
 			Client.database.removeMutedStation(station.getType(), station.getId());
 		}
@@ -172,12 +167,14 @@ public class StationsTabActions {
 		}
 		
 		try {
-			if (type != GlobalConstants.TYPE_WORLD) {
+			if (type != GlobalConstants.TYPE_WORLD && type != GlobalConstants.TYPE_BIOME) {
 				int range = Integer.parseInt(dialog.rangeField.getText());
 				station.setRange(range);
 			}
+			
 			byte maxVolume = (byte) dialog.maxVolumeSlider.getValue();
 			station.setMaxVolume(maxVolume);
+			
 			byte priority = (byte) Byte.parseByte(dialog.priorityField.getText());
 			if (priority < 1) {
 				priority = 1;
@@ -186,7 +183,7 @@ public class StationsTabActions {
 			}
 			station.setPriority(priority);
 		} catch (NumberFormatException e) {
-			App.logger.i("Could not edit range or priority of station. Invalid integer-value.", null);
+			App.logger.i("Could not edit range, priority or volume of station. Invalid integer-value.", null);
 		}
 		station.setEditableByOthers(dialog.editableByOthersCheckBox.isSelected());
 		station.setRadio(dialog.radioCheckBox.isSelected());
@@ -201,7 +198,6 @@ public class StationsTabActions {
 				station.addSong((Song) song);
 			}
 		}
-		
 		//send the edited station to the server
 		Client.tcpClient.sendPacket(TcpOpcodes.SV_DATA_CMD_EDIT_STATION, type, station);
 		
