@@ -178,7 +178,7 @@ public class EditStationDialog extends JDialog {
 			pane.add(Box.createRigidArea(new Dimension(0,20)));
 		}
 		
-		if (type != GlobalConstants.TYPE_WORLD) {
+		if (type == GlobalConstants.TYPE_AREA || type == GlobalConstants.TYPE_BOX) {
 			Box rangeBox = Box.createHorizontalBox();
 				String titleString = "Fadeout-Range: ";
 				if (type == GlobalConstants.TYPE_BOX)
