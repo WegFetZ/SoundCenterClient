@@ -26,7 +26,7 @@ import com.soundcenter.soundcenter.client.util.GuiUtil;
 public class StationsTab extends JPanel {
 
 	public JComboBox playerComboBox = new JComboBox();
-	public JComboBox typeComboBox = new JComboBox(new String[]{"Areas", "Boxes", "Biomes", "Worlds"});
+	public JComboBox typeComboBox = new JComboBox(new String[]{"Areas", "Boxes", "Biomes", "Worlds", "WorldGuard Regions"});
 	
 	public JList stationList = new JList();
 	

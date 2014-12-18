@@ -167,6 +167,7 @@ public class TcpProtocol {
 
 					App.audioManager.stopPlayer(type, id, true);
 					Client.database.removeStation(type, id, true);
+
 					return true;
 
 				} else if (cmd == TcpOpcodes.CL_DATA_CMD_DELETE_SONG) {

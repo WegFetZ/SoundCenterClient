@@ -12,7 +12,9 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+
 import com.soundcenter.soundcenter.lib.data.Region;
+import com.soundcenter.soundcenter.lib.data.Station;
 
 public class RegionListCellRenderer extends JPanel implements ListCellRenderer {
 	
@@ -20,7 +22,7 @@ public class RegionListCellRenderer extends JPanel implements ListCellRenderer {
 	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
 			boolean cellHasFocus) {
 
-		Region region = (Region) value;
+		Station region = (Station) value;
 
 		this.removeAll();
 		

@@ -25,6 +25,7 @@ public class AudioManager {
 	public ConcurrentHashMap<Short, PlayerController> boxPlayers = new ConcurrentHashMap<Short, PlayerController>();
 	public ConcurrentHashMap<Short, PlayerController> biomePlayers = new ConcurrentHashMap<Short, PlayerController>();
 	public ConcurrentHashMap<Short, PlayerController> worldPlayers = new ConcurrentHashMap<Short, PlayerController>();
+	public ConcurrentHashMap<Short, PlayerController> wgRegionPlayers = new ConcurrentHashMap<Short, PlayerController>();
 	public ConcurrentHashMap<Short, PlayerController> voicePlayers = new ConcurrentHashMap<Short, PlayerController>();
 	public PlayerController globalPlayer = null;
 
@@ -95,7 +96,7 @@ public class AudioManager {
 			} else {
 				volumeManager.setPlayerVolume(controller, (byte) 100);
 			}
-		} else if (type == GlobalConstants.TYPE_WORLD || type == GlobalConstants.TYPE_BIOME) {
+		} else if (type == GlobalConstants.TYPE_WORLD || type == GlobalConstants.TYPE_BIOME || type == GlobalConstants.TYPE_WGREGION) {
 			volumeManager.setPlayerVolume(controller, (byte) 100);
 		}
 	}
@@ -137,7 +138,7 @@ public class AudioManager {
 	
 	public boolean playersOverlap() {
 		//ceck if there is more than one player (excluding speex players)
-		int players = (areaPlayers.size() + boxPlayers.size() + biomePlayers.size() + worldPlayers.size());
+		int players = (areaPlayers.size() + boxPlayers.size() + biomePlayers.size() + worldPlayers.size() + wgRegionPlayers.size());
 		return players > 1 || (players == 1 && globalPlayer != null);
 	}
 
@@ -270,6 +271,10 @@ public class AudioManager {
 					PlayerController controller = entry.getValue();
 					controller.close(true);
 				}
+				for (Entry<Short, PlayerController> entry : wgRegionPlayers.entrySet()) {
+					PlayerController controller = entry.getValue();
+					controller.close(true);
+				}
 				
 				if (globalPlayer != null) {
 					globalPlayer.close(true);
@@ -279,6 +284,7 @@ public class AudioManager {
 				boxPlayers.clear();
 				biomePlayers.clear();
 				worldPlayers.clear();
+				wgRegionPlayers.clear();
 				globalPlayer = null;
 				if (App.gui != null) {
 					App.gui.controller.setPlayButtonText("Play Globally");
@@ -305,6 +311,8 @@ public class AudioManager {
 			return biomePlayers;
 		case GlobalConstants.TYPE_WORLD:
 			return worldPlayers;
+		case GlobalConstants.TYPE_WGREGION:
+			return wgRegionPlayers;
 		case GlobalConstants.TYPE_VOICE:
 			return voicePlayers;
 		default:

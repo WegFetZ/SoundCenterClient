@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
+
 import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
@@ -28,12 +29,14 @@ public class Database implements Serializable{
 	public ConcurrentHashMap<Short, Station> boxes = new ConcurrentHashMap<Short, Station>();
 	public ConcurrentHashMap<Short, Station> biomes = new ConcurrentHashMap<Short, Station>();
 	public ConcurrentHashMap<Short, Station> worlds = new ConcurrentHashMap<Short, Station>();
+	public ConcurrentHashMap<Short, Station> wgRegions = new ConcurrentHashMap<Short, Station>();
 	public ConcurrentHashMap<String, Song> songs = new ConcurrentHashMap<String, Song>();
 	
 	private ConcurrentHashMap<String, DefaultListModel> areaModels = new ConcurrentHashMap<String, DefaultListModel>();
 	private ConcurrentHashMap<String, DefaultListModel> boxModels = new ConcurrentHashMap<String, DefaultListModel>();
 	private ConcurrentHashMap<String, DefaultListModel> biomeModels = new ConcurrentHashMap<String, DefaultListModel>();
 	private ConcurrentHashMap<String, DefaultListModel> worldModels = new ConcurrentHashMap<String, DefaultListModel>();
+	private ConcurrentHashMap<String, DefaultListModel> wgRegionModels = new ConcurrentHashMap<String, DefaultListModel>();
 	private ConcurrentHashMap<String, DefaultListModel> songModels = new ConcurrentHashMap<String, DefaultListModel>();
 	
 	private DefaultListModel availableBiomesModel = new DefaultListModel();
@@ -45,6 +48,7 @@ public class Database implements Serializable{
 	public List<Short> mutedBoxes = new ArrayList<Short>(); 
 	public List<Short> mutedBiomes = new ArrayList<Short>(); 
 	public List<Short> mutedWorlds = new ArrayList<Short>(); 
+	public List<Short> mutedWGRegions = new ArrayList<Short>(); 
 	
 	private List<String> permissions = new ArrayList<String>();
 	
@@ -83,6 +87,9 @@ public class Database implements Serializable{
 			case GlobalConstants.TYPE_WORLD:
 				item = "Worlds";
 				removeAvailableWorld(station.getName());
+				break;
+			case GlobalConstants.TYPE_WGREGION:
+				item = "WorldGuard Regions";
 			}
 			updateStationsTab(station.getOwner(), item, model);
 		}
@@ -115,10 +122,12 @@ public class Database implements Serializable{
 	public void removeStation(Station station, boolean updateAvailables) {
 		ConcurrentHashMap<Short, Station> stationMap = getStationMap(station.getType());
 		ConcurrentHashMap<String, DefaultListModel> modelMap = getModelMap(station.getType());
-		
-		if (stationMap != null && modelMap != null) {
-			stationMap.remove(station);
-			
+
+		if (stationMap != null) {
+			stationMap.remove(station.getId());
+
+		}
+		if (modelMap != null) {			
 			DefaultListModel model = null;
 			if (modelMap.containsKey(station.getOwner())) {
 				model = modelMap.get(station.getOwner());
@@ -132,6 +141,9 @@ public class Database implements Serializable{
 				break;
 			case GlobalConstants.TYPE_BOX:
 				item = "Boxes";
+				break;
+			case GlobalConstants.TYPE_WGREGION:
+				item = "WorldGuard Regions";
 				break;
 			case GlobalConstants.TYPE_BIOME:
 				item = "Biomes";
@@ -159,6 +171,8 @@ public class Database implements Serializable{
 			return biomes;
 		case GlobalConstants.TYPE_WORLD:
 			return worlds;
+		case GlobalConstants.TYPE_WGREGION:
+			return wgRegions;
 		default:
 			return null;
 		}
@@ -174,6 +188,8 @@ public class Database implements Serializable{
 			return biomeModels;
 		case GlobalConstants.TYPE_WORLD:
 			return worldModels;
+		case GlobalConstants.TYPE_WGREGION:
+			return wgRegionModels;
 		default:
 			return null;
 		}
@@ -188,6 +204,12 @@ public class Database implements Serializable{
 	/* --------------------------- BOXES -------------------------- */
 	public DefaultListModel getBoxModel(String player) {
 		return boxModels.get(player);
+	}
+	
+	
+	/* --------------------------- WGREGIONS -------------------------- */
+	public DefaultListModel getWGRegionModel(String player) {
+		return wgRegionModels.get(player);
 	}
 	
 	
@@ -289,6 +311,9 @@ public class Database implements Serializable{
 		for (Entry<Short, Station> entry : worlds.entrySet()) {
 			entry.getValue().removeSong(path);
 		}
+		for (Entry<Short, Station> entry : wgRegions.entrySet()) {
+			entry.getValue().removeSong(path);
+		}
 	}
 	
 	public void addSongToUpload(File song) {
@@ -347,6 +372,8 @@ public class Database implements Serializable{
 			return mutedBiomes;
 		case GlobalConstants.TYPE_WORLD:
 			return mutedWorlds;
+		case GlobalConstants.TYPE_WGREGION:
+			return mutedWGRegions;
 		default:
 			return null;
 		}
@@ -424,6 +451,10 @@ public class Database implements Serializable{
 			DefaultListModel model = entry.getValue();
 			model.removeAllElements();
 		}
+		for (Entry<String, DefaultListModel> entry : wgRegionModels.entrySet()) {
+			DefaultListModel model = entry.getValue();
+			model.removeAllElements();
+		}
 		for (Entry<String, DefaultListModel> entry : songModels.entrySet()) {
 			DefaultListModel model = entry.getValue();
 			model.removeAllElements();
@@ -442,6 +473,7 @@ public class Database implements Serializable{
 		boxModels.clear();
 		biomeModels.clear();
 		worldModels.clear();
+		wgRegionModels.clear();
 		songModels.clear();
 		permissions.clear();
 		
