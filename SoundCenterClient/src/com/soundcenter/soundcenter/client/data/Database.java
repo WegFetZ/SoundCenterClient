@@ -87,6 +87,11 @@ public class Database implements Serializable{
 			updateStationsTab(station.getOwner(), item, model);
 		}
 	}
+	
+	public boolean hasStation(byte type, short id) {
+		ConcurrentHashMap<Short, Station> map = getStationMap(type);
+		return map.containsKey(id);
+	}
 
 	public Station getStation(byte type, short id) {
 		Station station = null;
