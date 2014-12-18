@@ -20,6 +20,7 @@ import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.data.Region;
 import com.soundcenter.soundcenter.lib.data.Song;
 import com.soundcenter.soundcenter.lib.data.Station;
+import com.soundcenter.soundcenter.lib.data.WGRegion;
 import com.soundcenter.soundcenter.lib.tcp.TcpOpcodes;
 
 public class StationsTabActions {
@@ -56,6 +57,10 @@ public class StationsTabActions {
 				renderer = new RegionListCellRenderer();
 				if (Client.database.permissionGranted("sc.set.world"))
 					addButtonEnabled = true;
+
+			} else if(type.equals("WorldGuard Regions")) {
+				model = Client.database.getWGRegionModel(player);
+				renderer = new RegionListCellRenderer();
 			}
 			
 			if (model != null && renderer != null) {
@@ -164,10 +169,13 @@ public class StationsTabActions {
 			
 		} else if (type == GlobalConstants.TYPE_WORLD) {
 			station = new Region(oldStation.getId(), oldStation.getOwner(), oldStation.getName(), type);
+		
+		} else if (type == GlobalConstants.TYPE_WGREGION) {
+			station = new WGRegion(oldStation.getId(), oldStation.getOwner(), oldStation.getName(), oldStation.getMin(), oldStation.getMax(), oldStation.getPoints());
 		}
 		
 		try {
-			if (type != GlobalConstants.TYPE_WORLD && type != GlobalConstants.TYPE_BIOME) {
+			if (type == GlobalConstants.TYPE_AREA || type == GlobalConstants.TYPE_BOX) {
 				int range = Integer.parseInt(dialog.rangeField.getText());
 				station.setRange(range);
 			}

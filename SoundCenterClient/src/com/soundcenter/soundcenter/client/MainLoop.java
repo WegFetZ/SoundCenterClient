@@ -31,6 +31,7 @@ public class MainLoop implements Runnable {
 			if (location != null && App.audioManager.isMusicActive()) {
 				HashMap<Short, Double> boxesInRange = IntersectionDetection.getBoxesInRange(location);
 				HashMap<Short, Double> areasInRange = IntersectionDetection.getAreasInRange(location);
+				List<Short> wgRegionsInRange = IntersectionDetection.getWGRegionsInRange(location);
 				List<Short> biomesInRange = IntersectionDetection.getBiomeInRange(location);
 				List<Short> worldsInRange = IntersectionDetection.getWorldInRange(location);
 				
@@ -62,6 +63,18 @@ public class MainLoop implements Runnable {
 					id = entry.getKey();
 					dist = entry.getValue();
 					App.audioManager.updatePlayer(GlobalConstants.TYPE_AREA, id, dist);
+				}
+				
+				/* update wgRegion players */
+				for (Entry<Short, PlayerController> entry : App.audioManager.wgRegionPlayers.entrySet()) {
+					id = entry.getKey();
+	
+					if (!wgRegionsInRange.contains(id)) {					
+						App.audioManager.stopPlayer(GlobalConstants.TYPE_WGREGION, id, false);
+					}
+				}
+				for (short wgRegionId : wgRegionsInRange) {	
+					App.audioManager.updatePlayer(GlobalConstants.TYPE_WGREGION, wgRegionId, 0);
 				}
 				
 				/* update biome players */

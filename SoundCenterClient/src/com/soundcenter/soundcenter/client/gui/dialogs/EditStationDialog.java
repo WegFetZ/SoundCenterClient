@@ -124,7 +124,7 @@ public class EditStationDialog extends JDialog {
 		pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
 		pane.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
 		
-		if (type == GlobalConstants.TYPE_BIOME || type == GlobalConstants.TYPE_WORLD) {
+		if (type == GlobalConstants.TYPE_BIOME || type == GlobalConstants.TYPE_WORLD || type == GlobalConstants.TYPE_WGREGION) {
 			Box nameBox = Box.createHorizontalBox();
 				JLabel nameTitleLabel = new JLabel("Name: ");
 				nameTitleLabel.setPreferredSize(new Dimension(100, 20));
