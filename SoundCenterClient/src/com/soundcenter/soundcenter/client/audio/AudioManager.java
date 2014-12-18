@@ -55,7 +55,7 @@ public class AudioManager {
 		//if controller is midi player, start a new music player
 		if (controller instanceof MidiPlayer && !Client.database.isMuted(type, id)) {
 			int priority = controller.getPlayerPriority();
-			controller.close();
+			controller.close(false);
 			
 			controller = new MusicPlayer(type, id);
 			controller.setPlayerPriority(priority);
@@ -74,7 +74,10 @@ public class AudioManager {
 				return;
 			}
 			controller = createNewPlayer(type, id);
-
+			if (controller == null) {
+				return;
+			}
+			
 			if (!(controller instanceof RadioPlayer)) {
 				sendStartCommand(type, id);
 			}
@@ -182,6 +185,10 @@ public class AudioManager {
 	
 	private PlayerController createNewPlayer(byte type, short id) {
 		
+		if (!Client.database.hasStation(type, id)) {
+			return null;
+		}
+		
 		App.logger.d("Creating new player. Type: " + type + " id: " + id, null);
 		
 		PlayerController controller = null;
@@ -216,10 +223,10 @@ public class AudioManager {
 		return controller;
 	}
 	
-	public void stopPlayer(final byte type, final short id) {
+	public void stopPlayer(final byte type, final short id, boolean preventRestart) {
 		PlayerController controller = getPlayer(type, id);
 		if (controller != null) {
-			controller.close();
+			controller.close(preventRestart);
 		}
 	}
 	
@@ -235,7 +242,7 @@ public class AudioManager {
 			public void run() {
 				for (Entry<Short, PlayerController> entry : voicePlayers.entrySet()) {
 					PlayerController controller = entry.getValue();
-					controller.close();
+					controller.close(false);
 				}
 				
 				voicePlayers.clear();
@@ -249,23 +256,23 @@ public class AudioManager {
 			public void run() {
 				for (Entry<Short, PlayerController> entry : areaPlayers.entrySet()) {
 					PlayerController controller = entry.getValue();
-					controller.close();
+					controller.close(true);
 				}
 				for (Entry<Short, PlayerController> entry : boxPlayers.entrySet()) {
 					PlayerController controller = entry.getValue();
-					controller.close();
+					controller.close(true);
 				}
 				for (Entry<Short, PlayerController> entry : biomePlayers.entrySet()) {
 					PlayerController controller = entry.getValue();
-					controller.close();
+					controller.close(true);
 				}
 				for (Entry<Short, PlayerController> entry : worldPlayers.entrySet()) {
 					PlayerController controller = entry.getValue();
-					controller.close();
+					controller.close(true);
 				}
 				
 				if (globalPlayer != null) {
-					globalPlayer.close();
+					globalPlayer.close(true);
 				}
 				
 				areaPlayers.clear();

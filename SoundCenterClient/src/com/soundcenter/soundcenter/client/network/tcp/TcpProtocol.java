@@ -144,7 +144,8 @@ public class TcpProtocol {
 
 				if (cmd == TcpOpcodes.CL_DATA_STATION) {
 					Station station = (Station) packet.getKey();
-					App.audioManager.stopPlayer(station.getType(), station.getId());
+					Client.database.removeStation(station.getType(), station.getId(), false);
+					App.audioManager.stopPlayer(station.getType(), station.getId(), true);
 					Client.database.addStation(station);
 					return true;
 
@@ -164,7 +165,7 @@ public class TcpProtocol {
 					byte type = (Byte) packet.getKey();
 					short id = (Short) packet.getValue();
 
-					App.audioManager.stopPlayer(type, id);
+					App.audioManager.stopPlayer(type, id, true);
 					Client.database.removeStation(type, id, true);
 					return true;
 
@@ -257,7 +258,7 @@ public class TcpProtocol {
 					return true;
 				
 				} else if (cmd == TcpOpcodes.CL_CMD_STOP_GLOBAL) {
-					App.audioManager.stopPlayer(GlobalConstants.TYPE_GLOBAL, (short) 1);
+					App.audioManager.stopPlayer(GlobalConstants.TYPE_GLOBAL, (short) 1, false);
 					return true;
 					
 				}

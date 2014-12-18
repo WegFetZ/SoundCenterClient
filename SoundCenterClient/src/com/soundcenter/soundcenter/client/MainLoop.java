@@ -41,7 +41,7 @@ public class MainLoop implements Runnable {
 					id = entry.getKey();
 	
 					if (!boxesInRange.containsKey(id)) {
-						App.audioManager.stopPlayer(GlobalConstants.TYPE_BOX, id);
+						App.audioManager.stopPlayer(GlobalConstants.TYPE_BOX, id, false);
 					}
 				}
 				for (Entry<Short, Double> entry : boxesInRange.entrySet()) {
@@ -55,7 +55,7 @@ public class MainLoop implements Runnable {
 					id = entry.getKey();
 					
 					if (!areasInRange.containsKey(id)) {					
-						App.audioManager.stopPlayer(GlobalConstants.TYPE_AREA, id);
+						App.audioManager.stopPlayer(GlobalConstants.TYPE_AREA, id, false);
 					}
 				}
 				for (Entry<Short, Double> entry : areasInRange.entrySet()) {
@@ -69,7 +69,7 @@ public class MainLoop implements Runnable {
 					id = entry.getKey();
 	
 					if (!biomesInRange.contains(id)) {					
-						App.audioManager.stopPlayer(GlobalConstants.TYPE_BIOME, id);
+						App.audioManager.stopPlayer(GlobalConstants.TYPE_BIOME, id, false);
 					}
 				}
 				for (short biomeId : biomesInRange) {	
@@ -81,7 +81,7 @@ public class MainLoop implements Runnable {
 					id = entry.getKey();
 	
 					if (!worldsInRange.contains(id)) {					
-						App.audioManager.stopPlayer(GlobalConstants.TYPE_WORLD, id);
+						App.audioManager.stopPlayer(GlobalConstants.TYPE_WORLD, id, false);
 					}
 				}
 				for (short worldId : worldsInRange) {	

@@ -205,9 +205,11 @@ public class PlayerController extends Thread {
 		}
 	}
 	
-	public void close() {
-		App.audioManager.removePlayer(type, playerId, this);
-		App.audioManager.volumeManager.removePriority(playerPriority);
+	public void close(final boolean preventRestart) {
+		if (!preventRestart) {
+			App.audioManager.removePlayer(type, playerId, this);
+			App.audioManager.volumeManager.removePriority(playerPriority);
+		}
 
 		fadeVolume(oldVolume, 0);
 		//wait for fadeout if close is called again from another thread
@@ -245,6 +247,11 @@ public class PlayerController extends Thread {
 				}
 				
 				queue.clear();
+				
+				if (preventRestart) {
+					App.audioManager.removePlayer(type, playerId, PlayerController.this);
+					App.audioManager.volumeManager.removePriority(playerPriority);
+				}
 		    }
 		}, 1000);
 	}

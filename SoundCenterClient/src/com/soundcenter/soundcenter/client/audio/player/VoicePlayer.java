@@ -54,7 +54,7 @@ public class VoicePlayer extends PlayerController {
 			} catch (InterruptedException e) {}
 		}
 		if (!exit) {
-			close();
+			close(false);
 		}
 		
 		//Applet.logger.d("SpeexPlayer closed.", null);
@@ -82,7 +82,7 @@ public class VoicePlayer extends PlayerController {
 		} catch (LineUnavailableException e) {
 			e.printStackTrace();
 			if (!exit)
-				close();
+				close(false);
 		}
 	}
 
