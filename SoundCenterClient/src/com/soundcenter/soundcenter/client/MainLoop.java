@@ -34,9 +34,7 @@ public class MainLoop implements Runnable {
 				List<Short> wgRegionsInRange = IntersectionDetection.getWGRegionsInRange(location);
 				List<Short> biomesInRange = IntersectionDetection.getBiomeInRange(location);
 				List<Short> worldsInRange = IntersectionDetection.getWorldInRange(location);
-				
-				//TODO: BORDERS!!!
-				
+							
 				/* update box players */
 				for (Entry<Short, PlayerController> entry : App.audioManager.boxPlayers.entrySet()) {
 					id = entry.getKey();

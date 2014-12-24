@@ -22,6 +22,10 @@ public class SongListCellRenderer extends JPanel implements ListCellRenderer {
 			boolean cellHasFocus) {
 
 		Song song = (Song) value;
+		String type = "   ";
+		if (song.getDuration() == -1) {
+			type = "   Radio: ";
+		}
 
 		this.removeAll();
 		
@@ -30,10 +34,11 @@ public class SongListCellRenderer extends JPanel implements ListCellRenderer {
 		this.add(Box.createRigidArea(new Dimension(0, 3)));
 		Box box = Box.createHorizontalBox();
 			box.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-			box.add(new JLabel("  " + song.getTitle()));
-			box.add(Box.createRigidArea(new Dimension(10,0)));
+			box.add(new JLabel(type));
+			box.add(new JLabel(song.getTitle()));
+			box.add(Box.createRigidArea(new Dimension(20,0)));
+			box.add(new JLabel("URL: " + song.getUrl()));
 			box.add(Box.createHorizontalGlue());
-			box.add(new JLabel(song.getMBSize() + "  "));
 		this.add(box);
 		
 		this.setOpaque(true);

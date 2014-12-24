@@ -13,6 +13,12 @@ import com.soundcenter.soundcenter.lib.data.WGRegion;
 
 public class IntersectionDetection {
 
+	private static final int PRELOAD_DISTANCE = 5; // this is used to start a
+													// player before actually
+													// coming on range. it will
+													// help keepin the delay
+													// small TODO: make it user-configurable
+
 	public static List<Short> getBiomeInRange(SCLocation loc) {
 		List<Short> matches = new ArrayList<Short>();
 		for (Entry<Short, Station> entry : Client.database.biomes.entrySet()) {
@@ -45,11 +51,11 @@ public class IntersectionDetection {
 			try {
 				// check if location is roughly in rangeof the box, before
 				// calculating exact distance
-				if (locIsNear(center, loc, box.getRange())) {
+				if (locIsNear(center, loc, box.getRange() + PRELOAD_DISTANCE)) {
 					double distance = center.distance(loc);
 
 					/* if in range of box, add box id and distance to list */
-					if (!isNaN(distance) && distance <= box.getRange()) {
+					if (!isNaN(distance) && distance <= box.getRange() + PRELOAD_DISTANCE) {
 						matches.put(id, distance);
 					}
 				}
@@ -66,10 +72,10 @@ public class IntersectionDetection {
 		for (Map.Entry<Short, Station> entry : Client.database.areas.entrySet()) {
 			short id = entry.getKey();
 			Station area = entry.getValue();
-			double distance = distToAreaBorder(loc, area, false);
+			double distance = distToAreaBorder(loc, area, true);
 
 			/* if in area, add area id and distance to border to list */
-			if (distance > 0) {
+			if (distance > 0 || Math.abs(distance) < PRELOAD_DISTANCE) {
 				matches.put(id, distance);
 			}
 		}
@@ -118,10 +124,9 @@ public class IntersectionDetection {
 			double distZ = Math.min(Math.abs(min.getZ() - loc.getZ()), Math.abs(max.getZ() - loc.getZ()));
 
 			// get minimum distance
-			if (contains)
+			if (contains) {
 				dist = Math.min(Math.min(distX, distY), Math.min(distZ, Math.min(distX, distY)));
-
-			else {
+			} else {
 				if (betweenX && betweenY)
 					dist = distZ;
 				else if (betweenX && betweenZ)
@@ -145,9 +150,12 @@ public class IntersectionDetection {
 		return dist;
 	}
 
-	/* this method is copied from 
-	 * https://github.com/sk89q/WorldGuard/blob/master/src/main/java/com/sk89q/worldguard/protection/regions/ProtectedPolygonalRegion.java
-	 * to move the expensive calculation for WorldGuard regions away from the server to the client
+	/*
+	 * this method is copied from
+	 * https://github.com/sk89q/WorldGuard/blob/master
+	 * /src/main/java/com/sk89q/worldguard
+	 * /protection/regions/ProtectedPolygonalRegion.java to move the expensive
+	 * calculation for WorldGuard regions away from the server to the client
 	 */
 	private static boolean locInWGRegion(SCLocation loc, WGRegion region) {
 		if (!loc.getWorld().equalsIgnoreCase(region.getWorld())) {

@@ -18,29 +18,22 @@ import javax.swing.JSeparator;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
-import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.client.gui.actions.MusicTabActions;
-import com.soundcenter.soundcenter.client.gui.dialogs.UploadSongDialog;
+import com.soundcenter.soundcenter.client.gui.dialogs.AddSongDialog;
 import com.soundcenter.soundcenter.client.gui.renderer.SongListCellRenderer;
 import com.soundcenter.soundcenter.client.util.GuiUtil;
 
 public class MusicTab extends JPanel {
 	
-	public UploadSongDialog uploadSongsDialog = null;
+	public AddSongDialog addSongDialog = null;
 	
 	public JComboBox playerComboBox = new JComboBox();
 	
 	public JList songList = new JList();
-	public JList songsToUploadList = new JList();
-	public JLabel songsToUploadLabel = new JLabel("Not yet uploaded:");
-	public JPanel songsToUploadPanel = new JPanel();
 	
 	public JButton addButton = new JButton("Add...");
 	public JButton deleteButton = new JButton("Delete");
-	public JButton deleteSongToUploadButton = new JButton("Delete");
 	public JButton playButton = new JButton("Play Globally");
-	
-	public JButton uploadButton = new JButton("Upload...");
 	
 	public MusicTab() {
 		
@@ -51,15 +44,7 @@ public class MusicTab extends JPanel {
 		songList.setVisibleRowCount(-1);
 		JScrollPane musicScroller = new JScrollPane(songList);
 		musicScroller.setPreferredSize(new Dimension(450, 280));
-		musicScroller.setMinimumSize(new Dimension(200,80));
-		
-		songsToUploadList.setModel(Client.database.getSongsToUploadModel());
-		songsToUploadList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		songsToUploadList.setLayoutOrientation(JList.VERTICAL);
-		songsToUploadList.setVisibleRowCount(-1);
-		JScrollPane notUploadedScroller = new JScrollPane(songsToUploadList);
-		notUploadedScroller.setPreferredSize(new Dimension(210, 140));
-		notUploadedScroller.setMinimumSize(new Dimension(150,60));
+		musicScroller.setMinimumSize(new Dimension(200,80));;
 		
 		playerComboBox.setModel(new DefaultComboBoxModel());
 		
@@ -94,42 +79,8 @@ public class MusicTab extends JPanel {
 			}
 		});
 		
-		deleteSongToUploadButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				MusicTabActions.deleteSongToUploadButtonPressed(songsToUploadList);
-			}
-		});
 		
-		uploadButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				MusicTabActions.uploadButtonPressed();
-			}
-		});
-		
-		
-		/* build gui */
-		//show only when own player is selected
-		songsToUploadPanel.setVisible(false);
-		songsToUploadPanel.setLayout(new BoxLayout(songsToUploadPanel, BoxLayout.Y_AXIS));
-		
-		Box hBox1 = Box.createHorizontalBox();
-			hBox1.add(songsToUploadLabel);
-			hBox1.add(Box.createHorizontalGlue());
-		songsToUploadPanel.add(hBox1);
-		songsToUploadPanel.add(notUploadedScroller);
-		songsToUploadPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-		Box hBox2 = Box.createHorizontalBox();
-			hBox2.add(Box.createHorizontalGlue());
-			hBox2.add(deleteSongToUploadButton);
-		songsToUploadPanel.add(hBox2);
-		songsToUploadPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-		
-		Box uploadBox = Box.createHorizontalBox();
-			uploadBox.add(uploadButton);
-			uploadBox.add(Box.createHorizontalGlue());
-		songsToUploadPanel.add(uploadBox);
-
-		
+		/* build gui */		
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
 		
@@ -142,10 +93,7 @@ public class MusicTab extends JPanel {
 				playerChooserBox.add(playerComboBox);
 				playerChooserBox.add(Box.createHorizontalGlue());
 			vBox1.add(playerChooserBox);
-			
 			vBox1.add(Box.createVerticalGlue());
-			
-			vBox1.add(songsToUploadPanel);	
 		add(vBox1);
 		
 		add(Box.createRigidArea(new Dimension(10, 0)));

@@ -23,7 +23,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.gui.actions.StationsTabActions;
 import com.soundcenter.soundcenter.client.gui.renderer.SongListCellRenderer;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
@@ -45,12 +44,13 @@ public class EditStationDialog extends JDialog {
 	
 	public JTextField rangeField = new JTextField("25");
 	public JTextField priorityField = new JTextField("1");
-	public JTextField urlField = new JTextField();
 	
 	public JSlider maxVolumeSlider = new JSlider();
 	
 	public JCheckBox editableByOthersCheckBox = new JCheckBox("Station is editable by others.");
-	public JCheckBox radioCheckBox = new JCheckBox("Play webradio on this station");
+	public JCheckBox startFromBeginningCheckBox = new JCheckBox("Always start playlist from beginning when coming in range of the station.");
+	public JCheckBox loopCheckBox = new JCheckBox("Loop playlist.");
+	
 	public JList songList = new JList();
 	
 	public JButton editSongsButton = new JButton("Edit Songlist...");
@@ -68,7 +68,6 @@ public class EditStationDialog extends JDialog {
 		/* initialize components */
 		rangeField.setPreferredSize(new Dimension(40, 25));
 		priorityField.setPreferredSize(new Dimension(40, 25));
-		urlField.setPreferredSize(new Dimension(140, 25));
 		
 		maxVolumeSlider.setValue(100);
 		
@@ -107,12 +106,6 @@ public class EditStationDialog extends JDialog {
 			public void actionPerformed(ActionEvent arg0) {
 				dispose();				
 			}
-		});
-		
-		radioCheckBox.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				StationsTabActions.editStationDialogRadioCheckboxChanged(frame);
-			}	
 		});
 		
 		/* load station properties */
@@ -222,22 +215,6 @@ public class EditStationDialog extends JDialog {
 		
 		pane.add(Box.createRigidArea(new Dimension(0,15)));
 		
-		Box radioBox = Box.createHorizontalBox();
-			radioBox.add(radioCheckBox);
-			radioBox.add(Box.createHorizontalGlue());
-		pane.add(radioBox);
-		
-		pane.add(Box.createRigidArea(new Dimension(0,10)));
-		
-		Box urlBox = Box.createHorizontalBox();
-			urlBox.add(new JLabel("URL:"));
-			urlBox.add(Box.createRigidArea(new Dimension(5,0)));
-			urlBox.add(urlField);
-			urlBox.add(Box.createHorizontalGlue());
-		pane.add(urlBox);
-		
-		pane.add(Box.createRigidArea(new Dimension(0, 10)));
-		
 		Box songBox = Box.createHorizontalBox();
 			songBox.add(new JLabel("Songs:"));
 			songBox.add(Box.createHorizontalGlue());
@@ -249,6 +226,20 @@ public class EditStationDialog extends JDialog {
 			songButtonBox.add(editSongsButton);
 			songButtonBox.add(Box.createHorizontalGlue());			
 		pane.add(songButtonBox);
+		
+		pane.add(Box.createRigidArea(new Dimension(0, 5)));
+		
+		Box hBox1 = Box.createHorizontalBox();
+			hBox1.add(startFromBeginningCheckBox);
+			hBox1.add(Box.createHorizontalGlue());
+		pane.add(hBox1);
+		
+		pane.add(Box.createRigidArea(new Dimension(0, 5)));
+		
+		Box hBox2 = Box.createHorizontalBox();
+			hBox2.add(loopCheckBox);
+			hBox2.add(Box.createHorizontalGlue());
+		pane.add(hBox2);
 		
 		pane.add(Box.createRigidArea(new Dimension(0, 15)));
 		pane.add(Box.createVerticalGlue());
@@ -274,8 +265,8 @@ public class EditStationDialog extends JDialog {
 		priorityField.setText(String.valueOf(station.getPriority()));
 		rangeField.setText(String.valueOf(station.getRange()));
 		editableByOthersCheckBox.setSelected(station.isEditableByOthers());
-		radioCheckBox.setSelected(station.isRadio());
-		urlField.setText(station.getRadioURL());
+		startFromBeginningCheckBox.setSelected(station.shouldStartFromBeginning());
+		loopCheckBox.setSelected(station.shouldLoop());
 		
 		//load specific properties
 		String title = "Edit Station";
@@ -307,12 +298,6 @@ public class EditStationDialog extends JDialog {
 			break;
 		}
 		setTitle(title);
-		
-		// enable/ disable radio url field / songlist
-		boolean state = radioCheckBox.isSelected();
-		urlField.setEnabled(state);
-		songList.setEnabled(!state);
-		editSongsButton.setEnabled(!state);
 		
 		//populate songlist
 		DefaultListModel songListModel = (DefaultListModel) songList.getModel();

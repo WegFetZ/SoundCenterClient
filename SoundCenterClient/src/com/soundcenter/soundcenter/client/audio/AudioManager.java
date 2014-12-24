@@ -5,15 +5,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.Client;
-import com.soundcenter.soundcenter.client.audio.player.MusicPlayer;
-import com.soundcenter.soundcenter.client.audio.player.MidiPlayer;
 import com.soundcenter.soundcenter.client.audio.player.PlayerController;
-import com.soundcenter.soundcenter.client.audio.player.RadioPlayer;
+import com.soundcenter.soundcenter.client.audio.player.WebPlayer;
 import com.soundcenter.soundcenter.client.audio.player.VoicePlayer;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
+import com.soundcenter.soundcenter.lib.data.Song;
 import com.soundcenter.soundcenter.lib.data.Station;
-import com.soundcenter.soundcenter.lib.tcp.MidiNotificationPacket;
-import com.soundcenter.soundcenter.lib.tcp.TcpOpcodes;
 import com.soundcenter.soundcenter.lib.udp.UdpPacket;
 
 public class AudioManager {
@@ -33,15 +30,13 @@ public class AudioManager {
 		new Thread(recorder).start();
 	}
 
-	public void feedPacket(UdpPacket packet) {
+	public void feedVoicePacket(UdpPacket packet) {
 		byte type = packet.getType();
 		short id = packet.getID();
-
 		PlayerController controller = getPlayer(type, id);
 		if (controller == null) {
-			//create a new player for voice streams and global streams
-			if (type == GlobalConstants.TYPE_VOICE && isVoiceActive() 
-					|| type == GlobalConstants.TYPE_GLOBAL && isMusicActive()) {
+			// create a new player for voice streams and global streams
+			if (type == GlobalConstants.TYPE_VOICE && isVoiceActive()) {
 				if (!Client.database.isMuted(type, id)) {
 					controller = createNewPlayer(type, id);
 					if (controller == null) {
@@ -52,25 +47,16 @@ public class AudioManager {
 				return;
 			}
 		}
-		
-		//if controller is midi player, start a new music player
-		if (controller instanceof MidiPlayer && !Client.database.isMuted(type, id)) {
-			int priority = controller.getPlayerPriority();
-			controller.close(false);
-			
-			controller = new MusicPlayer(type, id);
-			controller.setPlayerPriority(priority);
-			controller.start();
+		if (controller instanceof VoicePlayer) {
+			((VoicePlayer) controller).addToQueue(packet);
 		}
-		
-		controller.addToQueue(packet);
 	}
-
+	
 	public void updatePlayer(byte type, short id, double dist) {
 		PlayerController controller = getPlayer(type, id);
 		if (controller == null) {
 			Station station = Client.database.getStation(type, id);
-			if (station == null || (station.getSongs().isEmpty() && !station.isRadio())
+			if (station == null || (station.getSongs().isEmpty())
 					|| Client.database.isMuted(type, id)) {
 				return;
 			}
@@ -78,39 +64,45 @@ public class AudioManager {
 			if (controller == null) {
 				return;
 			}
-			
-			if (!(controller instanceof RadioPlayer)) {
-				sendStartCommand(type, id);
-			}
+
 		}
 		if (type == GlobalConstants.TYPE_BOX) {
 			int range = Client.database.getStation(GlobalConstants.TYPE_BOX, id).getRange();
 			byte volumePercent = (byte) (100 - (dist / range) * 100);
-			volumeManager.setPlayerVolume(controller, volumePercent);
+			if (volumePercent >= 0) {
+				controller.allowPlayback();
+				volumeManager.setPlayerVolume(controller, volumePercent);
+			} else {
+				volumeManager.setPlayerVolume(controller, (byte) 0);
+			}
 
 		} else if (type == GlobalConstants.TYPE_AREA) {
 			int fadeout = Client.database.getStation(GlobalConstants.TYPE_AREA, id).getRange();
-			if (fadeout > 0 && dist < fadeout) {
-				byte volumePercent = (byte) ((100.0 / fadeout) * dist);
-				volumeManager.setPlayerVolume(controller, volumePercent);
+			if (dist >= 0) {
+				controller.allowPlayback();
+				if (fadeout > 0 && dist < fadeout) {
+					byte volumePercent = (byte) ((100.0 / fadeout) * dist);
+					volumeManager.setPlayerVolume(controller, volumePercent);
+				} else {
+					volumeManager.setPlayerVolume(controller, (byte) 100);
+				}
 			} else {
-				volumeManager.setPlayerVolume(controller, (byte) 100);
+				volumeManager.setPlayerVolume(controller, (byte) 0);
 			}
 		} else if (type == GlobalConstants.TYPE_WORLD || type == GlobalConstants.TYPE_BIOME || type == GlobalConstants.TYPE_WGREGION) {
 			volumeManager.setPlayerVolume(controller, (byte) 100);
 		}
 	}
 	
-	public void playMidi(MidiNotificationPacket notification, boolean waitForCurrentSong) {
-		byte type = notification.getType();
-		short id = notification.getId();
-		PlayerController controller = getPlayer(type, id);
-		if (controller != null) {
-			controller.setNextMidiPlayer(notification);
-		} else if (type == GlobalConstants.TYPE_GLOBAL && !Client.database.isMuted(type, id)) {
-			controller = createNewPlayer(type, id);
-			controller.setNextMidiPlayer(notification);
+	public void playGlobal(Song song) {
+		if (globalPlayer != null) {
+			globalPlayer.close(false);
 		}
+		globalPlayer = new WebPlayer(GlobalConstants.TYPE_GLOBAL, (short) 1);
+		globalPlayer.setSingleSong(song);
+		globalPlayer.start();
+		App.gui.controller.setPlayButtonText("Stop Globally");
+		
 	}
 
 	public void setVoiceActive(boolean value) {
@@ -196,24 +188,15 @@ public class AudioManager {
 		
 		Station station = Client.database.getStation(type, id);
 		ConcurrentHashMap<Short, PlayerController> map = getPlayerMap(type);
-		if (map != null) {
-			controller = new MusicPlayer(type, id);
-			
+		if (map != null) {			
 			if (station == null && type == GlobalConstants.TYPE_VOICE) {
 				controller = new VoicePlayer(type, id);
 			
-			} else if (station != null && station.isRadio()) {
-				controller = new RadioPlayer(type, id, station.getRadioURL());
+			} else if (station != null) {
+				controller = new WebPlayer(type, id);
 			}
 			
 			map.put(id, controller);
-		}
-		
-		if (type == GlobalConstants.TYPE_GLOBAL) {
-			App.gui.controller.setPlayButtonText("Stop Globally");
-			controller = new MusicPlayer(type, id);
-			
-			globalPlayer = controller;
 		}
 		
 		if (controller != null) {
@@ -291,14 +274,6 @@ public class AudioManager {
 				}
 			}
 		}).start();
-	}
-	
-	public void sendStartCommand(byte type, short id) {
-		Client.tcpClient.sendPacket(TcpOpcodes.SV_STREAM_CMD_START, type, id);
-	}
-	
-	public void sendStopCommand(byte type, short id) {
-		Client.tcpClient.sendPacket(TcpOpcodes.SV_STREAM_CMD_STOP, type, id);
 	}
 	
 	private ConcurrentHashMap<Short, PlayerController> getPlayerMap(byte type) {

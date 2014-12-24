@@ -1,6 +1,5 @@
 package com.soundcenter.soundcenter.client.network.tcp;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -19,7 +18,6 @@ public class TcpClient implements Runnable {
 	private Socket socket = null;
 	private ObjectOutputStream streamOut = null;
 	private ObjectInputStream streamIn = null;
-	private UploadManager uploadManager = null;
 	
 	private boolean exit = false;
 	private boolean active = false;
@@ -103,36 +101,6 @@ public class TcpClient implements Runnable {
 		}
 	}
 	
-	public UploadManager getUploadManager() {
-		return uploadManager;
-	}
-	
-	public void startUploadManager(File[] files) {
-		if (uploadManager == null || !uploadManager.isActive()) {
-			uploadManager = new UploadManager(files);
-			new Thread(uploadManager).start();
-		} else {
-			App.logger.i("Could not start new upload-manager, because one was already running.", null);
-		}
-	}
-	
-	public void approveUpload() {
-		if (uploadManager != null) {
-			uploadManager.approve();
-		}
-	}
-	
-	public void uploadDone() {
-		if (uploadManager != null) {
-			uploadManager.uploadDone();
-		}
-	}
-	
-	public void skipUpload() {
-		if (uploadManager != null) {
-			uploadManager.skip();
-		}
-	}
 	
 	public boolean isActive() {
 		return active;
@@ -140,9 +108,6 @@ public class TcpClient implements Runnable {
 	
 	public void shutdown() {
 		exit = true;
-		if (uploadManager != null) {
-			uploadManager.cancelAll();
-		}
 		
 		if (streamOut != null) {
 			try {

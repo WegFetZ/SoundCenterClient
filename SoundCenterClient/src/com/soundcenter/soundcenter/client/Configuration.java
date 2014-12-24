@@ -43,6 +43,7 @@ public class Configuration {
 		loadMutes(Client.database.mutedBoxes, new File(App.dataFolder + "mutedBoxes.txt"));
 		loadMutes(Client.database.mutedBiomes, new File(App.dataFolder + "mutedBiomes.txt"));
 		loadMutes(Client.database.mutedWorlds, new File(App.dataFolder + "mutedWorlds.txt"));
+		loadMutes(Client.database.mutedWGRegions, new File(App.dataFolder + "mutedWGRegions.txt"));
 		
 		App.logger.i("Configuration loaded.", null);
 		if (App.gui.controller.isDebugActive())
@@ -103,6 +104,7 @@ public class Configuration {
 		saveMutes(Client.database.mutedBoxes, new File(App.dataFolder + "mutedBoxes.txt"));
 		saveMutes(Client.database.mutedBiomes, new File(App.dataFolder + "mutedBiomes.txt"));
 		saveMutes(Client.database.mutedWorlds, new File(App.dataFolder + "mutedWorlds.txt"));
+		saveMutes(Client.database.mutedWGRegions, new File(App.dataFolder + "mutedWGReions.txt"));
 		
 		App.logger.i("Configuration saved.", null);
 	} 

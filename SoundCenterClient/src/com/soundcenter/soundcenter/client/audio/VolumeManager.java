@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.audio.player.PlayerController;
+import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 
 public class VolumeManager {
 
@@ -32,7 +33,9 @@ public class VolumeManager {
 		byte value = (byte) (volumePercent * masterVolume/100.D);
 		byte priotizedVolume = prioritizeVolume(keepInBounds(value), controller.getPlayerPriority());
 		
-		controller.setVolume(priotizedVolume, true);
+		boolean allowFade = controller.getType() != GlobalConstants.TYPE_VOICE;
+		
+		controller.setVolume(priotizedVolume, allowFade);
 	}
 	
 	private byte prioritizeVolume(byte value, int priority) {
@@ -61,9 +64,6 @@ public class VolumeManager {
 	
 	public void setMasterVolume(byte value) {
 		masterVolume = value;
-		
-		// update volume for biomes, worlds and global player
-		//TODO: when world/ biome borders are added, take care of them
 		/* update biome players */
 		for (Entry<Short, PlayerController> entry : App.audioManager.biomePlayers.entrySet()) {
 			setPlayerVolume(entry.getValue(), (byte) 100);

@@ -194,31 +194,19 @@ public class StationsTabActions {
 			App.logger.i("Could not edit range, priority or volume of station. Invalid integer-value.", null);
 		}
 		station.setEditableByOthers(dialog.editableByOthersCheckBox.isSelected());
-		station.setRadio(dialog.radioCheckBox.isSelected());
+		station.setStartFromBeginning(dialog.startFromBeginningCheckBox.isSelected());
+		station.setLoop(dialog.loopCheckBox.isSelected());
 		
-		if(station.isRadio()) {
-			station.setRadioURL(dialog.urlField.getText());
-			station.removeAllSongs();
-		} else {
-			station.removeAllSongs();
-			DefaultListModel songsModel = (DefaultListModel) dialog.songList.getModel();
-			for (Object song : songsModel.toArray()) {
-				station.addSong((Song) song);
-			}
+		station.removeAllSongs();
+		DefaultListModel songsModel = (DefaultListModel) dialog.songList.getModel();
+		for (Object song : songsModel.toArray()) {
+			station.addSong((Song) song);
 		}
+		
 		//send the edited station to the server
 		Client.tcpClient.sendPacket(TcpOpcodes.SV_DATA_CMD_EDIT_STATION, type, station);
 		
 		dialog.dispose();
-	}
-	
-	public static void editStationDialogRadioCheckboxChanged(EditStationDialog frame) {
-		boolean state = frame.radioCheckBox.isSelected();
-				
-		frame.urlField.setEnabled(state);
-		frame.songList.setEnabled(!state);
-		frame.editSongsButton.setEnabled(!state);
-				
 	}
 	
 	public static void editStationDialogEditSonglistButtonPressed(EditStationDialog parentDialog) {

@@ -59,7 +59,7 @@ public class UdpProcessor implements Runnable {
 			
 		} else if (isInGroup(packet.getType(), UdpOpcodes.GROUP_STREAM, UdpOpcodes.GROUP_END_STREAM)) {	/* music or voice stream */
 			//AppletStarter.logger.d("Player info: Type: " + packet.getType() + " Creator: " + packet.getID() + " Volume: " + packet.getVolume(), null);
-			App.audioManager.feedPacket(packet);
+			App.audioManager.feedVoicePacket(packet);
 			
 			//volume for voice gets calculated on the server, so we have to set it here
 			if (packet.getType() == UdpOpcodes.TYPE_VOICE) {

@@ -59,9 +59,6 @@ public class UdpClient implements Runnable {
 				datagramSocket.receive(receivedPacket);
 				udpProcessor.queue(receivedPacket.getData());
 			} catch (SocketTimeoutException e) {
-				if (Client.initialized) {
-					App.logger.d("Client has not received an UDP packet for 10seconds!", null);
-				}
 				// send a udp heartbeat packet
 				byte[] packetData = new byte[1];
 				Client.udpClient.sendData(packetData, UdpOpcodes.TYPE_HEARTBEAT);

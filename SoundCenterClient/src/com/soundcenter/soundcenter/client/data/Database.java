@@ -1,7 +1,5 @@
 package com.soundcenter.soundcenter.client.data;
 
-import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -15,22 +13,16 @@ import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.data.Song;
 import com.soundcenter.soundcenter.lib.data.Station;
-import com.soundcenter.soundcenter.lib.util.FileOperation;
 
 
-public class Database implements Serializable{
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1872505392008447869L;
+public class Database {
 	
 	public ConcurrentHashMap<Short, Station> areas = new ConcurrentHashMap<Short, Station>();
 	public ConcurrentHashMap<Short, Station> boxes = new ConcurrentHashMap<Short, Station>();
 	public ConcurrentHashMap<Short, Station> biomes = new ConcurrentHashMap<Short, Station>();
 	public ConcurrentHashMap<Short, Station> worlds = new ConcurrentHashMap<Short, Station>();
 	public ConcurrentHashMap<Short, Station> wgRegions = new ConcurrentHashMap<Short, Station>();
-	public ConcurrentHashMap<String, Song> songs = new ConcurrentHashMap<String, Song>();
+	public List<Song> songs = new ArrayList<Song>();
 	
 	private ConcurrentHashMap<String, DefaultListModel> areaModels = new ConcurrentHashMap<String, DefaultListModel>();
 	private ConcurrentHashMap<String, DefaultListModel> boxModels = new ConcurrentHashMap<String, DefaultListModel>();
@@ -258,10 +250,10 @@ public class Database implements Serializable{
 	}
 	
 	public void addSong(Song song) {
+			
+		songs.remove(song);
+		songs.add(song);
 		
-		removeSong(song.getPath(), false);		
-		
-		songs.put(song.getPath(), song);
 		DefaultListModel model = null;
 		if (songModels.containsKey(song.getOwner())) {
 			model = songModels.get(song.getOwner());
@@ -276,14 +268,7 @@ public class Database implements Serializable{
 		updateMusicTab(song.getOwner(), model);
 	}
 	
-	public void removeSong(String path, boolean removeFromStations) {
-		Song song = songs.get(path);
-		if (song != null) {
-			removeSong(song, removeFromStations);
-		}
-	}
-	
-	private void removeSong(Song song, boolean removeFromStations) {
+	public void removeSong(Song song) {
 		
 		DefaultListModel model = null;
 		if (songModels.containsKey(song.getOwner())) {
@@ -293,48 +278,20 @@ public class Database implements Serializable{
 		
 		updateMusicTab(song.getOwner(), null);
 		
-		if (removeFromStations) {
-			removeSongFromStations(song.getPath());
-		}
-	}
-	
-	public void removeSongFromStations(String path) {
 		for (Entry<Short, Station> entry : areas.entrySet()) {
-			entry.getValue().removeSong(path);
+			entry.getValue().removeSong(song);
 		}
 		for (Entry<Short, Station> entry : boxes.entrySet()) {
-			entry.getValue().removeSong(path);
+			entry.getValue().removeSong(song);
 		}
 		for (Entry<Short, Station> entry : biomes.entrySet()) {
-			entry.getValue().removeSong(path);
+			entry.getValue().removeSong(song);
 		}
 		for (Entry<Short, Station> entry : worlds.entrySet()) {
-			entry.getValue().removeSong(path);
+			entry.getValue().removeSong(song);
 		}
 		for (Entry<Short, Station> entry : wgRegions.entrySet()) {
-			entry.getValue().removeSong(path);
-		}
-	}
-	
-	public void addSongToUpload(File song) {
-		songsToUploadModel.addElement(song);
-	}
-	
-	public void removeSongToUpload(File song) {
-		songsToUploadModel.removeElement(song);
-	}
-	
-	public DefaultListModel getSongsToUploadModel() {
-		return songsToUploadModel;
-	}
-	
-	public void deleteOldSongs() {
-		List<File> fileList = FileOperation.listAllFiles(new File(App.dataFolder + "musicdata"));
-		for (File file : fileList) {
-			String path = file.getParentFile().getName() + File.separator + file.getName();
-			if (!file.isDirectory() && !songs.containsKey(path)) {
-				file.delete();
-			}
+			entry.getValue().removeSong(song);
 		}
 	}
 	
