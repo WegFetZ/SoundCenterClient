@@ -107,6 +107,7 @@ public class MusicTabActions {
 			long duration = -1;
 			long bytes = -1;
 			
+			String type = aff.getType().toString();
 			//for music files we need to know the duration and size
 			if (!dialog.radioCheckBox.isSelected()) {
 				
@@ -120,7 +121,7 @@ public class MusicTabActions {
 				
 				float frameRate = format.getFrameRate();
 				//for mp3 we need to get the frame size from its properties
-				if (aff.getType().toString().equalsIgnoreCase("MP3")) {
+				if (type.equalsIgnoreCase("MP3")) {
 					int frameSize = -1;
 					Map<String, Object> properties = aff.properties();
 					if (properties.get("mp3.framesize.bytes") != null) {
@@ -141,6 +142,7 @@ public class MusicTabActions {
 			}
 			
 			Song song = new Song(Client.userName, title, urlString, duration, bytes);
+			song.setFormat(type);
 			Client.tcpClient.sendPacket(TcpOpcodes.SV_DATA_CMD_ADD_SONG, song, null);
 			
 			dialog.dispose();
