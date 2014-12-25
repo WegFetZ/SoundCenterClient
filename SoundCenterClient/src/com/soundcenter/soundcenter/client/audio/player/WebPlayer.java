@@ -119,17 +119,24 @@ public class WebPlayer extends PlayerController {
 		AudioInputStream decodedAudioStream = null;
 		try {
 			URL url = new URL(song.getUrl());
-			URLConnection uc = url.openConnection();
-			uc.setUseCaches(false);
-			if (byteOffset > 0) {
-				uc.setRequestProperty("Range", "bytes="+byteOffset+"-");
+			if (song.getFormat().equalsIgnoreCase("MP3")) {
+				URLConnection uc = url.openConnection();
+				uc.setUseCaches(false);
+				if (byteOffset > 0) {
+					uc.setRequestProperty("Range", "bytes="+byteOffset+"-");
+				}
+				uc.connect();
+				encodedAudioStream = AudioSystem.getAudioInputStream(uc.getInputStream());
+			} else {
+				encodedAudioStream = AudioSystem.getAudioInputStream(url);
 			}
-			uc.connect();
-			encodedAudioStream = AudioSystem.getAudioInputStream(uc.getInputStream());
 			
 			if (encodedAudioStream != null) {
 				init(encodedAudioStream.getFormat());
 				decodedAudioStream = AudioSystem.getAudioInputStream(decodedFormat, encodedAudioStream);
+				if (!song.getFormat().equalsIgnoreCase("MP3")) {
+					decodedAudioStream.skip(byteOffset);
+				}
 				
 				while(!exit && station.shouldStartFromBeginning() && !allowPlayback) {
 					try { Thread.sleep(50); } catch(InterruptedException e) {}
