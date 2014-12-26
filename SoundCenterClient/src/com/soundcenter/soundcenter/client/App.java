@@ -37,8 +37,8 @@ public class App {
 	
 					logger = new SCLogger(Logger.getLogger(App.class.getName()), gui);
 					logger.i("SoundCenterClient v" + version + " started.", null);
-					audioManager = new AudioManager();
 					config = new Configuration();
+					audioManager = new AudioManager();
 					config.load();
 					
 					if (name != null && name != "")
