@@ -16,7 +16,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.gui.actions.GeneralTabActions;
 import com.soundcenter.soundcenter.client.gui.actions.MusicTabActions;
 import com.soundcenter.soundcenter.client.gui.actions.StationsTabActions;
