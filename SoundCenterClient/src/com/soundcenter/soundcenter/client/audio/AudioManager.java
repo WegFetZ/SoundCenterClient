@@ -6,7 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.client.audio.player.PlayerController;
-import com.soundcenter.soundcenter.client.audio.player.WebPlayer;
+import com.soundcenter.soundcenter.client.audio.player.SingleSongPlayer;
+import com.soundcenter.soundcenter.client.audio.player.StationPlayer;
 import com.soundcenter.soundcenter.client.audio.player.VoicePlayer;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.data.Song;
@@ -18,13 +19,16 @@ public class AudioManager {
 	public Recorder recorder = new Recorder();
 	public VolumeManager volumeManager = new VolumeManager(this);
 
+	//station players
 	public ConcurrentHashMap<Short, PlayerController> areaPlayers = new ConcurrentHashMap<Short, PlayerController>();
 	public ConcurrentHashMap<Short, PlayerController> boxPlayers = new ConcurrentHashMap<Short, PlayerController>();
 	public ConcurrentHashMap<Short, PlayerController> biomePlayers = new ConcurrentHashMap<Short, PlayerController>();
 	public ConcurrentHashMap<Short, PlayerController> worldPlayers = new ConcurrentHashMap<Short, PlayerController>();
 	public ConcurrentHashMap<Short, PlayerController> wgRegionPlayers = new ConcurrentHashMap<Short, PlayerController>();
+	//voice players are handled as station players
 	public ConcurrentHashMap<Short, PlayerController> voicePlayers = new ConcurrentHashMap<Short, PlayerController>();
-	public PlayerController globalPlayer = null;
+	//single song players
+	public ConcurrentHashMap<Song, PlayerController> singleSongPlayers = new ConcurrentHashMap<Song, PlayerController>();
 
 	public AudioManager() {
 		new Thread(recorder).start();
@@ -33,18 +37,13 @@ public class AudioManager {
 	public void feedVoicePacket(UdpPacket packet) {
 		byte type = packet.getType();
 		short id = packet.getID();
-		PlayerController controller = getPlayer(type, id);
+		PlayerController controller = getStationPlayer(type, id);
 		if (controller == null) {
-			// create a new player for voice streams and global streams
-			if (type == GlobalConstants.TYPE_VOICE && isVoiceActive()) {
-				if (!Client.database.isMuted(type, id)) {
-					controller = createNewPlayer(type, id);
-					if (controller == null) {
-						return;
-					}
+			if (!Client.database.isMuted(type, id)) {
+				controller = createNewStationPlayer(type, id);
+				if (controller == null) {
+					return;
 				}
-			} else {
-				return;
 			}
 		}
 		if (controller instanceof VoicePlayer) {
@@ -52,15 +51,15 @@ public class AudioManager {
 		}
 	}
 	
-	public void updatePlayer(byte type, short id, double dist) {
-		PlayerController controller = getPlayer(type, id);
+	public void updateStationPlayer(byte type, short id, double dist) {
+		PlayerController controller = getStationPlayer(type, id);
 		if (controller == null) {
 			Station station = Client.database.getStation(type, id);
 			if (station == null || (station.getSongs().isEmpty())
 					|| Client.database.isMuted(type, id)) {
 				return;
 			}
-			controller = createNewPlayer(type, id);
+			controller = createNewStationPlayer(type, id);
 			if (controller == null) {
 				return;
 			}
@@ -89,20 +88,20 @@ public class AudioManager {
 			} else {
 				volumeManager.setPlayerVolume(controller, (byte) 0);
 			}
-		} else if (type == GlobalConstants.TYPE_WORLD || type == GlobalConstants.TYPE_BIOME || type == GlobalConstants.TYPE_WGREGION) {
+		} else {
 			volumeManager.setPlayerVolume(controller, (byte) 100);
 		}
 	}
 	
-	public void playGlobal(Song song) {
-		if (globalPlayer != null) {
-			globalPlayer.close(false);
+	public void playSingleSong(Song song) {
+		if (singleSongPlayers.containsKey(song)) {
+			return;
 		}
-		globalPlayer = new WebPlayer(GlobalConstants.TYPE_GLOBAL, (short) 1);
-		globalPlayer.setSingleSong(song);
-		globalPlayer.start();
-		App.gui.controller.setPlayButtonText("Stop Globally");
+		//TODO: add priority to single songs
+		PlayerController controller = new SingleSongPlayer(song, 1);
+		controller.start();
 		
+		singleSongPlayers.put(song, controller);
 	}
 
 	public void setVoiceActive(boolean value) {
@@ -114,33 +113,34 @@ public class AudioManager {
 	public boolean isVoiceActive() {
 		return App.gui.controller.isVoiceActive();
 	}
-	public void setMusicActive(boolean value) {
-		App.gui.controller.setMusicActive(value);
+	public void setStationsActive(boolean value) {
+		App.gui.controller.setStationsActive(value);
 		if (!value) {
-			stopMusic();
+			stopStations();
 		}
 	}
-	public boolean isMusicActive() {
-		return App.gui.controller.isMusicActive();
+	public boolean areStationsActive() {
+		return App.gui.controller.areStationsActive();
 	}
-
-	public boolean isPlayingGlobally() {
-		return (globalPlayer != null);
+	public void setSingleSongsActive(boolean value) {
+		App.gui.controller.setSingleSongsActive(value);
+		if (!value) {
+			stopSingleSongs();
+		}
+	}
+	public boolean areSingleSongsActive() {
+		return App.gui.controller.areSingleSongsActive();
 	}
 	
 	public boolean playersOverlap() {
 		//ceck if there is more than one player (excluding speex players)
-		int players = (areaPlayers.size() + boxPlayers.size() + biomePlayers.size() + worldPlayers.size() + wgRegionPlayers.size());
-		return players > 1 || (players == 1 && globalPlayer != null);
+		int players = (areaPlayers.size() + boxPlayers.size() + biomePlayers.size() + worldPlayers.size() + wgRegionPlayers.size() + singleSongPlayers.size());
+		return players > 1;
 	}
 
-	public PlayerController getPlayer(byte type, short id) {
+	public PlayerController getStationPlayer(byte type, short id) {
 		
-		if (type == GlobalConstants.TYPE_GLOBAL) {
-			return globalPlayer;
-		}
-		
-		ConcurrentHashMap<Short, PlayerController> map = getPlayerMap(type);
+		ConcurrentHashMap<Short, PlayerController> map = getStationPlayerMap(type);
 		if (map != null) {
 			return map.get(id);
 		}
@@ -148,35 +148,34 @@ public class AudioManager {
 		return null;
 	}
 	
-	public void putPlayer(byte type, short id, PlayerController controller) {
+	public void putStationPlayer(byte type, short id, PlayerController controller) {
 
-		ConcurrentHashMap<Short, PlayerController> map = getPlayerMap(type);
+		ConcurrentHashMap<Short, PlayerController> map = getStationPlayerMap(type);
 		if (map != null) {
 			map.put(id, controller);
 		}
-		
-		if (type == GlobalConstants.TYPE_GLOBAL) {
-			globalPlayer = controller;
-		}
-	}	
-	
-	public void removePlayer(byte type, short id, PlayerController controller) {
 
-		ConcurrentHashMap<Short, PlayerController> map = getPlayerMap(type);
+	}
+	
+	public void removeStationPlayer(byte type, short id, PlayerController controller) {
+
+		ConcurrentHashMap<Short, PlayerController> map = getStationPlayerMap(type);
 		if (map != null) {
 			//prevent players from removing other players
 			if (map.get(id) == controller) {
 				map.remove(id);
 			}
 		}
-		
-		if (type == GlobalConstants.TYPE_GLOBAL) {
-			globalPlayer = null;
-			App.gui.controller.setPlayButtonText("Play Globally");
+	}
+	
+	public void removeSingleSongPlayer(Song song, PlayerController controller) {
+		//prevent players from removing other players
+		if (singleSongPlayers.get(song) == controller) {
+			singleSongPlayers.remove(song);
 		}
 	}
 	
-	private PlayerController createNewPlayer(byte type, short id) {
+	private PlayerController createNewStationPlayer(byte type, short id) {
 		
 		if (!Client.database.hasStation(type, id)) {
 			return null;
@@ -187,13 +186,13 @@ public class AudioManager {
 		PlayerController controller = null;
 		
 		Station station = Client.database.getStation(type, id);
-		ConcurrentHashMap<Short, PlayerController> map = getPlayerMap(type);
+		ConcurrentHashMap<Short, PlayerController> map = getStationPlayerMap(type);
 		if (map != null) {			
 			if (station == null && type == GlobalConstants.TYPE_VOICE) {
 				controller = new VoicePlayer(type, id);
 			
 			} else if (station != null) {
-				controller = new WebPlayer(type, id);
+				controller = new StationPlayer(type, id);
 			}
 			
 			map.put(id, controller);
@@ -207,17 +206,24 @@ public class AudioManager {
 		return controller;
 	}
 	
-	public void stopPlayer(final byte type, final short id, boolean preventRestart) {
-		PlayerController controller = getPlayer(type, id);
+	public void stopStationPlayer(final byte type, final short id, boolean preventRestart) {
+		PlayerController controller = getStationPlayer(type, id);
 		if (controller != null) {
 			controller.close(preventRestart);
 		}
 	}
 	
+	public void stopSingleSongPlayer(Song song) {
+		PlayerController controller = singleSongPlayers.get(song);
+		if (controller != null) {
+			controller.close(false);
+		}
+	}
+	
 	public void stopAll() {	
-		stopMusic();
+		stopStations();
+		stopSingleSongs();
 		stopVoice();
-		recorder.stop();
 	}
 	
 	public void stopVoice() {
@@ -234,7 +240,7 @@ public class AudioManager {
 		}).start();
 	}
 	
-	public void stopMusic() {
+	public void stopStations() {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -259,24 +265,24 @@ public class AudioManager {
 					controller.close(true);
 				}
 				
-				if (globalPlayer != null) {
-					globalPlayer.close(true);
-				}
-				
 				areaPlayers.clear();
 				boxPlayers.clear();
 				biomePlayers.clear();
 				worldPlayers.clear();
 				wgRegionPlayers.clear();
-				globalPlayer = null;
-				if (App.gui != null) {
-					App.gui.controller.setPlayButtonText("Play Globally");
-				}
 			}
 		}).start();
 	}
 	
-	private ConcurrentHashMap<Short, PlayerController> getPlayerMap(byte type) {
+	public void stopSingleSongs() {
+		for (Entry<Song, PlayerController> entry : singleSongPlayers.entrySet()) {
+			PlayerController controller = entry.getValue();
+			controller.close(true);
+		}
+		singleSongPlayers.clear();
+	}
+	
+	private ConcurrentHashMap<Short, PlayerController> getStationPlayerMap(byte type) {
 		switch (type) {
 		case GlobalConstants.TYPE_AREA:
 			return areaPlayers;

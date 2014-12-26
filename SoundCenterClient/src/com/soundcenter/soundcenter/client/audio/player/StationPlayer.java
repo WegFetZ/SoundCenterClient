@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.FloatControl;
@@ -17,106 +16,110 @@ import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 import com.soundcenter.soundcenter.client.App;
+import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 import com.soundcenter.soundcenter.lib.data.Song;
 
-public class WebPlayer extends PlayerController {
+public class StationPlayer extends PlayerController {
 
 	private AudioFormat decodedFormat = null;
-	private Song singleSong = null;
 	List<Song> songList = null;
 	String prefix;
 
-	public WebPlayer(byte type, short id) {
-		super(type, id);
+	public StationPlayer(byte type, short id) {
+		
+		this.type = type;
+		this.playerId = id;
+		this.station = Client.database.getStation(type, playerId);
+		if (station != null) {
+			this.playerPriority = station.getPriority();
+			this.maxVolume = station.getMaxVolume();
+		}
+		
 		if (type == GlobalConstants.TYPE_BOX || type == GlobalConstants.TYPE_AREA) {
 			allowPlayback = false;
 		}
+		
+		App.audioManager.volumeManager.addPriority(playerPriority);
 	}
 	
-	public void setSingleSong(Song song) {
-		this.singleSong = song;
+	public StationPlayer(Song song, int priority) {
+		App.logger.w("Cannot instantiate a WebPlayer(Song song, int priority). Use WebPlayer(byte type, short id) instead.", null);
+		exit = true;
 	}
 
 	@Override
 	public void run() {
+		if (exit) {
+			return;
+		}
 		Thread.currentThread().setName("WebPlayer");
 		// get the list of songs to be played
 		
 		if (station != null) {
 			songList = station.getSongs();
 			prefix = "[StationPlayer " + type + "(" + playerId + ")] ";
-		} else if (singleSong != null) {
-			prefix = "[SongPlayer " + singleSong.getTitle() + " - " + singleSong.getOwner() + "] "; 
 		}
 
 		//App.logger.d("Starting player: " + prefix, null);
 		
-		if ((songList == null || songList.isEmpty()) && singleSong == null) {
+		if ((songList == null || songList.isEmpty())) {
 			App.logger.d(prefix + "No songs provided - player closing. ", null);
 			close(false);
 			return;
 		}
 
-		if (singleSong != null) {
-			
-			streamSong(singleSong,(long) 0, (byte) 0);
-
-		} else {
-			int index = 0;
-			long byteOffset = 0;
-			ListIterator<Song> iter = songList.listIterator();
-			
-			if (!station.shouldStartFromBeginning()) {
-				// get the offset for the playback
-				long[] offset = getOffset(songList);
-				index = (int) offset[0];
-				byteOffset = offset[1];
-			
-				if (index == -1) {
-					App.logger.d(prefix + "Got negative index - player closing.", null);
-					close(false);
-					return;
-				}
-				
-				// set iterator to the calculated index
-				while (iter.hasNext() && iter.nextIndex() < index) {
-					iter.next();
-				}
+		int index = 0;
+		long byteOffset = 0;
+		ListIterator<Song> iter = songList.listIterator();
+		
+		if (!station.shouldStartFromBeginning()) {
+			// get the offset for the playback
+			long[] offset = getOffset(songList);
+			index = (int) offset[0];
+			byteOffset = offset[1];
+		
+			if (index == -1) {
+				App.logger.d(prefix + "Got negative index - player closing.", null);
+				close(false);
+				return;
 			}
 			
-			while (!exit) {
-				if (songList.isEmpty()) {
-					close(false);
-					return;
-				}
-				if (!iter.hasNext()) {
-					if (station.shouldLoop()) {
-						iter = songList.listIterator();
-					} else {
-						//if we shall not loop, sleep until player gets closed
-						while(!exit) {
-							try { Thread.sleep(100); } catch(InterruptedException e){}
-						}
-						close(false);
-						App.logger.d(prefix + "Player closing.", null);
-						return;
+			// set iterator to the calculated index
+			while (iter.hasNext() && iter.nextIndex() < index) {
+				iter.next();
+			}
+		}
+		
+		while (!exit) {
+			if (songList.isEmpty()) {
+				close(false);
+				return;
+			}
+			if (!iter.hasNext()) {
+				if (station.shouldLoop()) {
+					iter = songList.listIterator();
+				} else {
+					//if we shall not loop, sleep until player gets closed
+					while(!exit) {
+						try { Thread.sleep(100); } catch(InterruptedException e){}
 					}
+					close(false);
+					App.logger.d(prefix + "Player closing.", null);
+					return;
 				}
-				index = iter.nextIndex();
-				Song currentSong = iter.next();
-				
-				streamSong(currentSong, byteOffset, (byte) index);
-
-				byteOffset = 0;
 			}
+			index = iter.nextIndex();
+			Song currentSong = iter.next();
+			
+			streamSong(currentSong, byteOffset, (byte) index);
+
+			byteOffset = 0;
 		}
 		App.logger.d(prefix + "Player closing.", null);
 	}
 	
 	private void streamSong (Song song, long byteOffset, byte index) {
-		AudioInputStream encodedAudioStream = null;
-		AudioInputStream decodedAudioStream = null;
 		try {
 			URL url = new URL(song.getUrl());
 			if (song.getFormat().equalsIgnoreCase("MP3")) {
@@ -147,8 +150,10 @@ public class WebPlayer extends PlayerController {
 
 					byte[] data = new byte[bufferSize];
 					numBytesRead = decodedAudioStream.read(data, 0, data.length);
-					firstPacketReceived = true; // now we can start fading the
-												// volume
+					if (!fadedIn) {// now we can fade in the volume, if not already done
+						fadeIn();
+						fadedIn = true;
+					}
 					if (numBytesRead > 0 && data != null)
 						line.write(data, 0, data.length);
 				}
@@ -163,14 +168,10 @@ public class WebPlayer extends PlayerController {
 			App.logger.i(prefix + "Error while retrieving audio file format-information. Please remove song: "  + song.getTitle() + " - " + song.getOwner(), e);
 		}
 
-		try {
-			if (encodedAudioStream != null)
-				encodedAudioStream.close();
-			if (decodedAudioStream != null)
-				decodedAudioStream.close();
-		} catch (IOException e) {
+		if (!exit) {
+			close(false);
 		}
-
+		
 		// AppletStarter.logger.d("Song stopped/ finished at player " + id +
 		// ".",
 		// null);
@@ -227,11 +228,10 @@ public class WebPlayer extends PlayerController {
 		ampGainDB = ((10.0f / 20.0f) * volumeControl.getMaximum()) - volumeControl.getMinimum();
 		cste = Math.log(10.0) / 20;
 
-		if (type != GlobalConstants.TYPE_VOICE && type != GlobalConstants.TYPE_GLOBAL) {
-			volumeControl.setValue((float) minGainDB);
-			this.oldVolume = 0;
-		}
-
+		//for stations we want to set the initial volume to 0
+		volumeControl.setValue((float) minGainDB);
+		this.oldVolume = 0;
+		
 		line.start();
 
 		//App.logger.d("prefix + WebPlayer SourceDataLine started!", null);

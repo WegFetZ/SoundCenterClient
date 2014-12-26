@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.audio.player.PlayerController;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
+import com.soundcenter.soundcenter.lib.data.Song;
 
 public class VolumeManager {
 
@@ -23,7 +24,7 @@ public class VolumeManager {
 	}
 	
 	public void setPlayerVolume(byte type, short id, byte volumePercent) {
-		PlayerController controller = audioManager.getPlayer(type, id);
+		PlayerController controller = audioManager.getStationPlayer(type, id);
 		if (controller != null) {
 			setPlayerVolume(controller, volumePercent);
 		}		
@@ -64,17 +65,9 @@ public class VolumeManager {
 	
 	public void setMasterVolume(byte value) {
 		masterVolume = value;
-		/* update biome players */
-		for (Entry<Short, PlayerController> entry : App.audioManager.biomePlayers.entrySet()) {
+		/* update singleSong players */
+		for (Entry<Song, PlayerController> entry : App.audioManager.singleSongPlayers.entrySet()) {
 			setPlayerVolume(entry.getValue(), (byte) 100);
-		}
-		/* update world players */
-		for (Entry<Short, PlayerController> entry : App.audioManager.worldPlayers.entrySet()) {
-			setPlayerVolume(entry.getValue(), (byte) 100);
-		}
-		/* update global player */
-		if (audioManager.globalPlayer != null) {
-			setPlayerVolume(audioManager.globalPlayer, (byte) 100);
 		}
 	}
 	

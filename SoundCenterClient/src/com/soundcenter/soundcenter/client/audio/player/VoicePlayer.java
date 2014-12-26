@@ -14,6 +14,8 @@ import javax.sound.sampled.SourceDataLine;
 
 import org.xiph.speex.SpeexDecoder;
 
+import com.soundcenter.soundcenter.client.App;
+import com.soundcenter.soundcenter.lib.data.Song;
 import com.soundcenter.soundcenter.lib.udp.UdpPacket;
 
 public class VoicePlayer extends PlayerController {
@@ -22,7 +24,16 @@ public class VoicePlayer extends PlayerController {
 	private SpeexDecoder speexDecoder = new SpeexDecoder();
 
 	public VoicePlayer(byte type, short id) {
-		super(type, id);
+		this.type = type;
+		this.playerId = id;
+		this.fadedIn = true; //we do not want to fade in
+		
+		App.audioManager.volumeManager.addPriority(playerPriority);
+	}
+	
+	public VoicePlayer(Song song, int priority) {
+		App.logger.w("Cannot instantiate a WebPlayer(Song song, int priority). Use WebPlayer(byte type, short id) instead.", null);
+		exit = true;
 	}
 
 	public void setQueue(BlockingQueue<UdpPacket> queue) {
