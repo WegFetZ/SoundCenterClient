@@ -28,7 +28,7 @@ public class MainLoop implements Runnable {
 		while(!exit) {
 			timeA = System.currentTimeMillis();
 			
-			if (location != null && App.audioManager.isMusicActive()) {
+			if (location != null && App.audioManager.areStationsActive()) {
 				HashMap<Short, Double> boxesInRange = IntersectionDetection.getBoxesInRange(location);
 				HashMap<Short, Double> areasInRange = IntersectionDetection.getAreasInRange(location);
 				List<Short> wgRegionsInRange = IntersectionDetection.getWGRegionsInRange(location);
@@ -40,13 +40,13 @@ public class MainLoop implements Runnable {
 					id = entry.getKey();
 	
 					if (!boxesInRange.containsKey(id)) {
-						App.audioManager.stopPlayer(GlobalConstants.TYPE_BOX, id, false);
+						App.audioManager.stopStationPlayer(GlobalConstants.TYPE_BOX, id, false);
 					}
 				}
 				for (Entry<Short, Double> entry : boxesInRange.entrySet()) {
 					id = entry.getKey();
 					dist = entry.getValue();
-					App.audioManager.updatePlayer(GlobalConstants.TYPE_BOX, id, dist);
+					App.audioManager.updateStationPlayer(GlobalConstants.TYPE_BOX, id, dist);
 				}
 				
 				/* update area players */
@@ -54,13 +54,13 @@ public class MainLoop implements Runnable {
 					id = entry.getKey();
 					
 					if (!areasInRange.containsKey(id)) {					
-						App.audioManager.stopPlayer(GlobalConstants.TYPE_AREA, id, false);
+						App.audioManager.stopStationPlayer(GlobalConstants.TYPE_AREA, id, false);
 					}
 				}
 				for (Entry<Short, Double> entry : areasInRange.entrySet()) {
 					id = entry.getKey();
 					dist = entry.getValue();
-					App.audioManager.updatePlayer(GlobalConstants.TYPE_AREA, id, dist);
+					App.audioManager.updateStationPlayer(GlobalConstants.TYPE_AREA, id, dist);
 				}
 				
 				/* update wgRegion players */
@@ -68,11 +68,11 @@ public class MainLoop implements Runnable {
 					id = entry.getKey();
 	
 					if (!wgRegionsInRange.contains(id)) {					
-						App.audioManager.stopPlayer(GlobalConstants.TYPE_WGREGION, id, false);
+						App.audioManager.stopStationPlayer(GlobalConstants.TYPE_WGREGION, id, false);
 					}
 				}
 				for (short wgRegionId : wgRegionsInRange) {	
-					App.audioManager.updatePlayer(GlobalConstants.TYPE_WGREGION, wgRegionId, 0);
+					App.audioManager.updateStationPlayer(GlobalConstants.TYPE_WGREGION, wgRegionId, 0);
 				}
 				
 				/* update biome players */
@@ -80,11 +80,11 @@ public class MainLoop implements Runnable {
 					id = entry.getKey();
 	
 					if (!biomesInRange.contains(id)) {					
-						App.audioManager.stopPlayer(GlobalConstants.TYPE_BIOME, id, false);
+						App.audioManager.stopStationPlayer(GlobalConstants.TYPE_BIOME, id, false);
 					}
 				}
 				for (short biomeId : biomesInRange) {	
-					App.audioManager.updatePlayer(GlobalConstants.TYPE_BIOME, biomeId, 0);
+					App.audioManager.updateStationPlayer(GlobalConstants.TYPE_BIOME, biomeId, 0);
 				}
 				
 				/* update world players */
@@ -92,11 +92,11 @@ public class MainLoop implements Runnable {
 					id = entry.getKey();
 	
 					if (!worldsInRange.contains(id)) {					
-						App.audioManager.stopPlayer(GlobalConstants.TYPE_WORLD, id, false);
+						App.audioManager.stopStationPlayer(GlobalConstants.TYPE_WORLD, id, false);
 					}
 				}
 				for (short worldId : worldsInRange) {	
-					App.audioManager.updatePlayer(GlobalConstants.TYPE_WORLD, worldId, 0);
+					App.audioManager.updateStationPlayer(GlobalConstants.TYPE_WORLD, worldId, 0);
 				}
 			}
 			
@@ -113,6 +113,10 @@ public class MainLoop implements Runnable {
 	
 	public void setLocation(SCLocation loc) {
 		this.location = loc;
+	}
+	
+	public SCLocation getLocation() {
+		return location;
 	}
 	
 	public void shutdown() {

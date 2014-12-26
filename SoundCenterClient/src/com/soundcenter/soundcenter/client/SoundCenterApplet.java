@@ -4,6 +4,7 @@ import javax.swing.JApplet;
 
 import com.soundcenter.soundcenter.client.gui.UserInterface;
 
+@SuppressWarnings("serial")
 public class SoundCenterApplet extends JApplet {
 	@Override
 	public void init() {
