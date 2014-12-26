@@ -38,7 +38,7 @@ public class MusicTabActions {
 		
 		if (song != null) {
 			if (song.getOwner().equalsIgnoreCase(Client.userName) 
-					|| Client.database.permissionGranted("sc.delete.others")) {
+					|| Client.database.permissionGranted("sc.others.delete")) {
 				App.gui.musicTab.deleteButton.setEnabled(true);
 			} else {
 				App.gui.musicTab.deleteButton.setEnabled(false);
