@@ -13,9 +13,9 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 
-import com.soundcenter.soundcenter.lib.data.Region;
 import com.soundcenter.soundcenter.lib.data.Station;
 
+@SuppressWarnings("serial")
 public class RegionListCellRenderer extends JPanel implements ListCellRenderer {
 	
 	@Override

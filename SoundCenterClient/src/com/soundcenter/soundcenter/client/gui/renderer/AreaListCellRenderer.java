@@ -12,9 +12,11 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+
 import com.soundcenter.soundcenter.lib.data.Area;
 import com.soundcenter.soundcenter.lib.data.SCLocation;
 
+@SuppressWarnings("serial")
 public class AreaListCellRenderer extends JPanel implements ListCellRenderer {
 	
 	@Override

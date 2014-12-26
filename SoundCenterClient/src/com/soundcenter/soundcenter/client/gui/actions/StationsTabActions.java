@@ -1,5 +1,7 @@
 package com.soundcenter.soundcenter.client.gui.actions;
 
+import java.util.List;
+
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -25,14 +27,17 @@ import com.soundcenter.soundcenter.lib.tcp.TcpOpcodes;
 
 public class StationsTabActions {
 	
+	public static void tabOpened() {
+	}
+	
 	/* ---------------------- Stations Tab ------------------------- */
 	
 	public static void stationChooserSelected() {
-		JComboBox playerComboBox = App.gui.stationsTab.playerComboBox;
-		JComboBox typeComboBox = App.gui.stationsTab.typeComboBox;
+		JComboBox<String> playerComboBox = App.gui.stationsTab.playerComboBox;
+		JComboBox<String> typeComboBox = App.gui.stationsTab.typeComboBox;
 		
-		DefaultListModel model = null;
-		ListCellRenderer renderer = null;
+		DefaultListModel<Station> model = null;
+		ListCellRenderer<Station> renderer = null;
 		boolean addButtonEnabled = false;
 		if (playerComboBox.getSelectedIndex() >= 0) {
 			String type = (String) typeComboBox.getSelectedItem();
@@ -68,7 +73,7 @@ public class StationsTabActions {
 				App.gui.stationsTab.stationList.setModel(model);
 				App.gui.stationsTab.stationList.setCellRenderer(renderer);
 			} else {
-				App.gui.stationsTab.stationList.setModel(new DefaultListModel());
+				App.gui.stationsTab.stationList.setModel(new DefaultListModel<Station>());
 			}
 			
 			if (player.equals(Client.userName)) {
@@ -89,7 +94,7 @@ public class StationsTabActions {
 				}
 			}
 		} else {
-			App.gui.stationsTab.stationList.setModel(new DefaultListModel());
+			App.gui.stationsTab.stationList.setModel(new DefaultListModel<Station>());
 			App.gui.stationsTab.addButton.setEnabled(false);
 			App.gui.stationsTab.editButton.setEnabled(false);
 			App.gui.stationsTab.deleteButton.setEnabled(false);
@@ -97,7 +102,7 @@ public class StationsTabActions {
 	}	
 	
 	public static void listSelectionChanged() {
-		Station station = (Station) App.gui.stationsTab.stationList.getSelectedValue();
+		Station station = App.gui.stationsTab.stationList.getSelectedValue();
 		
 		if (station != null) {
 			App.gui.stationsTab.muteCheckBox.setEnabled(true);
@@ -112,7 +117,7 @@ public class StationsTabActions {
 	public static void editStationButtonPressed() {
 		byte type = (byte) App.gui.stationsTab.typeComboBox.getSelectedIndex();
 		
-		Station station = (Station) App.gui.stationsTab.stationList.getSelectedValue();
+		Station station = App.gui.stationsTab.stationList.getSelectedValue();
 		if (station != null) {
 			EditStationDialog editDialog = new EditStationDialog(new JFrame(), type, station);
 			editDialog.setVisible(true);
@@ -130,7 +135,7 @@ public class StationsTabActions {
 	
 	public static void deleteStationButtonPressed() {
 		
-		Station station = (Station) App.gui.stationsTab.stationList.getSelectedValue();
+		Station station = App.gui.stationsTab.stationList.getSelectedValue();
 		
 		if (station != null) {
 			Client.tcpClient.sendPacket(TcpOpcodes.SV_DATA_CMD_DELETE_STATION, station.getType(), station.getId());
@@ -138,13 +143,13 @@ public class StationsTabActions {
 	}
 	
 	public static void muteCheckBoxSelected() {
-		Station station = (Station) App.gui.stationsTab.stationList.getSelectedValue();
+		Station station = App.gui.stationsTab.stationList.getSelectedValue();
 		if (station == null) {
 			return;
 		}
 		if (App.gui.stationsTab.muteCheckBox.isSelected()) {
 			Client.database.addMutedStation(station.getType(), station.getId());
-			App.audioManager.stopPlayer(station.getType(), station.getId(), true);
+			App.audioManager.stopStationPlayer(station.getType(), station.getId(), true);
 		} else {
 			Client.database.removeMutedStation(station.getType(), station.getId());
 		}
@@ -198,7 +203,7 @@ public class StationsTabActions {
 		station.setLoop(dialog.loopCheckBox.isSelected());
 		
 		station.removeAllSongs();
-		DefaultListModel songsModel = (DefaultListModel) dialog.songList.getModel();
+		DefaultListModel<Song> songsModel = (DefaultListModel<Song>) dialog.songList.getModel();
 		for (Object song : songsModel.toArray()) {
 			station.addSong((Song) song);
 		}
@@ -218,8 +223,8 @@ public class StationsTabActions {
 	//Edit songs
 	public static void editSongsDialogListSelectionChanged(EditSongsDialog dialog, ListSelectionEvent e) {		
 		if (e.getSource().equals(dialog.stationSongsList.getSelectionModel())) {
-			dialog.playerSongsList.clearSelection();
-		} else if (e.getSource().equals(dialog.playerSongsList.getSelectionModel())) {
+			dialog.availableSongList.clearSelection();
+		} else if (e.getSource().equals(dialog.availableSongList.getSelectionModel())) {
 			dialog.stationSongsList.clearSelection();
 		}
 		
@@ -229,7 +234,7 @@ public class StationsTabActions {
 			dialog.upButton.setEnabled(true);
 			dialog.downButton.setEnabled(true);
 			
-		} else if (dialog.playerSongsList.getSelectedIndex() >= 0) {
+		} else if (dialog.availableSongList.getSelectedIndex() >= 0) {
 			dialog.removeButton.setEnabled(false);
 			dialog.addButton.setEnabled(true);
 			dialog.upButton.setEnabled(false);
@@ -237,39 +242,21 @@ public class StationsTabActions {
 		}
 	}
 	
-	public static void editSongsDialogPlayerChooserSelected(EditSongsDialog dialog) {		
-		DefaultListModel model = null;
-		if (dialog.playerComboBox.getSelectedIndex() >= 0) {
-			String player = (String) dialog.playerComboBox.getSelectedItem();
-			model = Client.database.getSongModel(player);
-			
-			if (model != null) {
-				dialog.playerSongsList.setModel(model);
-			} else {
-				dialog.playerSongsList.setModel(new DefaultListModel());
-			}	
-			
-		} else {
-			dialog.playerSongsList.setModel(new DefaultListModel());
-			dialog.addButton.setEnabled(false);			
-		}
-	}
-	
 	public static void editSongsDialogAddButtonPressed(EditSongsDialog dialog) {
-		Object[] songs = (Object[]) dialog.playerSongsList.getSelectedValues();
+		List<Song> songs =  dialog.availableSongList.getSelectedValuesList();
 		if (songs != null) {
-			for (Object song: songs) {
-				DefaultListModel model = (DefaultListModel) dialog.stationSongsList.getModel();
+			for (Song song: songs) {
+				DefaultListModel<Song> model = (DefaultListModel<Song>) dialog.stationSongsList.getModel();
 				model.addElement(song);
 			}
 		}
 	}
 
 	public static void editSongsDialogRemoveButtonPressed(EditSongsDialog dialog) {
-		Object[] songs = (Object[]) dialog.stationSongsList.getSelectedValues();
+		List<Song> songs =  dialog.availableSongList.getSelectedValuesList();
 		if (songs != null) {
-			for (Object song : songs) {
-				DefaultListModel model = (DefaultListModel) dialog.stationSongsList.getModel();
+			for (Song song: songs) {
+				DefaultListModel<Song> model = (DefaultListModel<Song>) dialog.stationSongsList.getModel();
 				model.removeElement(song);
 			}
 		}
@@ -280,8 +267,8 @@ public class StationsTabActions {
 		if (indices != null) {
 				for (int index : indices) {
 					if (index > 0) {
-						DefaultListModel model = (DefaultListModel) dialog.stationSongsList.getModel();
-						Object temp = model.get(index -1);
+						DefaultListModel<Song> model = (DefaultListModel<Song>) dialog.stationSongsList.getModel();
+						Song temp = model.get(index -1);
 						model.set(index-1, model.get(index));
 						model.set(index, temp);
 						dialog.stationSongsList.setSelectedIndex(index-1);
@@ -292,11 +279,11 @@ public class StationsTabActions {
 
 	public static void editSongsDialogDownButtonPressed(EditSongsDialog dialog) {
 		int[] indices = dialog.stationSongsList.getSelectedIndices();
-		DefaultListModel model = (DefaultListModel) dialog.stationSongsList.getModel();
+		DefaultListModel<Song> model = (DefaultListModel<Song>) dialog.stationSongsList.getModel();
 		if (indices != null) {
 			for (int index : indices) {
 				if (index < model.getSize()-1) {
-					Object temp = model.get(index +1);
+					Song temp = model.get(index +1);
 					model.set(index+1, model.get(index));
 					model.set(index, temp);
 					dialog.stationSongsList.setSelectedIndex(index+1);

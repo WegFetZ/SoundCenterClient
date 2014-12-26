@@ -12,8 +12,10 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+
 import com.soundcenter.soundcenter.lib.data.SCLocation;
 
+@SuppressWarnings("serial")
 public class BoxListCellRenderer extends JPanel implements ListCellRenderer {
 	
 	@Override

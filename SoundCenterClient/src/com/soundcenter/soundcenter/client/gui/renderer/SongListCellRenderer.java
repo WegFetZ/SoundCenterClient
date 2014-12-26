@@ -15,6 +15,7 @@ import javax.swing.UIManager;
 
 import com.soundcenter.soundcenter.lib.data.Song;
 
+@SuppressWarnings("serial")
 public class SongListCellRenderer extends JPanel implements ListCellRenderer {
 
 	@Override
@@ -36,6 +37,8 @@ public class SongListCellRenderer extends JPanel implements ListCellRenderer {
 			box.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
 			box.add(new JLabel(type));
 			box.add(new JLabel(song.getTitle()));
+			box.add(Box.createRigidArea(new Dimension(20,0)));
+			box.add(new JLabel("Added by: " + song.getOwner()));
 			box.add(Box.createRigidArea(new Dimension(20,0)));
 			box.add(new JLabel("URL: " + song.getUrl()));
 			box.add(Box.createHorizontalGlue());

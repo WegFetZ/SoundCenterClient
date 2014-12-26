@@ -22,13 +22,15 @@ import javax.swing.event.ListSelectionListener;
 
 import com.soundcenter.soundcenter.client.gui.actions.StationsTabActions;
 import com.soundcenter.soundcenter.client.util.GuiUtil;
+import com.soundcenter.soundcenter.lib.data.Station;
 
+@SuppressWarnings("serial")
 public class StationsTab extends JPanel {
 
-	public JComboBox playerComboBox = new JComboBox();
-	public JComboBox typeComboBox = new JComboBox(new String[]{"Areas", "Boxes", "Biomes", "Worlds", "WorldGuard Regions"});
+	public JComboBox<String> playerComboBox = new JComboBox<String>();
+	public JComboBox<String> typeComboBox = new JComboBox<String>(new String[]{"Areas", "Boxes", "Biomes", "Worlds", "WorldGuard Regions"});
 	
-	public JList stationList = new JList();
+	public JList<Station> stationList = new JList<Station>();
 	
 	public JCheckBox muteCheckBox = new JCheckBox("Mute this station");
 	public JButton addButton = new JButton("Add...");
