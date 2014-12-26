@@ -20,6 +20,7 @@ import javax.swing.border.EmptyBorder;
 
 import com.soundcenter.soundcenter.client.gui.actions.MusicTabActions;
 
+@SuppressWarnings("serial")
 public class AddSongDialog extends JDialog {
 	
 	public JTextField titleTextField = new JTextField();
@@ -95,9 +96,9 @@ public class AddSongDialog extends JDialog {
 		
 		Box buttonBox = Box.createHorizontalBox();
 			buttonBox.add(Box.createHorizontalGlue());
-			buttonBox.add(cancelButton);
-			buttonBox.add(Box.createRigidArea(new Dimension(20,0)));
 			buttonBox.add(addButton);
+			buttonBox.add(Box.createRigidArea(new Dimension(20,0)));
+			buttonBox.add(cancelButton);
 		pane.add(buttonBox);
 		
 		pack();

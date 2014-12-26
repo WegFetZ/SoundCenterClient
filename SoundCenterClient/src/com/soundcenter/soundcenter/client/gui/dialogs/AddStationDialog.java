@@ -24,12 +24,13 @@ import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.client.gui.actions.StationsTabActions;
 import com.soundcenter.soundcenter.lib.data.GlobalConstants;
 
+@SuppressWarnings("serial")
 public class AddStationDialog extends JDialog {
 
 	public byte type;
 	private String typeString = "Stations";
 	
-	public JList availableList = new JList();
+	public JList<String> availableList = new JList<String>();
 	public JButton addButton = new JButton("Add");
 	public JButton cancelButton = new JButton("Cancel");
 	
@@ -45,7 +46,7 @@ public class AddStationDialog extends JDialog {
 		availableList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		availableList.setLayoutOrientation(JList.VERTICAL);
 		availableList.setVisibleRowCount(-1);
-		availableList.setModel(new DefaultListModel());
+		availableList.setModel(new DefaultListModel<String>());
 		
 		JScrollPane availableScroller = new JScrollPane(availableList);
 		availableScroller.setPreferredSize(new Dimension(350, 160));
@@ -94,9 +95,9 @@ public class AddStationDialog extends JDialog {
 		
 		Box buttonBox = Box.createHorizontalBox();
 			buttonBox.add(Box.createHorizontalGlue());
-			buttonBox.add(cancelButton);
-			buttonBox.add(Box.createRigidArea(new Dimension(20,0)));
 			buttonBox.add(addButton);
+			buttonBox.add(Box.createRigidArea(new Dimension(20,0)));
+			buttonBox.add(cancelButton);
 		pane.add(buttonBox);
 		
 		pack();
@@ -105,7 +106,7 @@ public class AddStationDialog extends JDialog {
 	}
 	
 	private void loadProperties(byte type) {
-		DefaultListModel model = null;
+		DefaultListModel<String> model = null;
 		String title = "Add Station";
 		
 		if (type == GlobalConstants.TYPE_BIOME) {

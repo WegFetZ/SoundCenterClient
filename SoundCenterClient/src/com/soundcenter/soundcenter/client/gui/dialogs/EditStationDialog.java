@@ -30,6 +30,7 @@ import com.soundcenter.soundcenter.lib.data.SCLocation;
 import com.soundcenter.soundcenter.lib.data.Song;
 import com.soundcenter.soundcenter.lib.data.Station;
 
+@SuppressWarnings("serial")
 public class EditStationDialog extends JDialog {
 	
 	public byte type = 0;
@@ -51,7 +52,7 @@ public class EditStationDialog extends JDialog {
 	public JCheckBox startFromBeginningCheckBox = new JCheckBox("Always start playlist from beginning when coming in range of the station.");
 	public JCheckBox loopCheckBox = new JCheckBox("Loop playlist.");
 	
-	public JList songList = new JList();
+	public JList<Song> songList = new JList<Song>();
 	
 	public JButton editSongsButton = new JButton("Edit Songlist...");
 	public JButton applyButton = new JButton("Apply");
@@ -74,7 +75,7 @@ public class EditStationDialog extends JDialog {
 		songList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		songList.setLayoutOrientation(JList.VERTICAL);
 		songList.setVisibleRowCount(-1);
-		songList.setModel(new DefaultListModel());
+		songList.setModel(new DefaultListModel<Song>());
 		songList.setCellRenderer(new SongListCellRenderer());
 		
 		JScrollPane songScroller = new JScrollPane(songList);
@@ -246,9 +247,9 @@ public class EditStationDialog extends JDialog {
 		
 		Box doneButtonBox = Box.createHorizontalBox();
 			doneButtonBox.add(Box.createHorizontalGlue());
-			doneButtonBox.add(cancelButton);
-			doneButtonBox.add(Box.createRigidArea(new Dimension(20,0)));
 			doneButtonBox.add(applyButton);
+			doneButtonBox.add(Box.createRigidArea(new Dimension(20,0)));
+			doneButtonBox.add(cancelButton);
 		pane.add(doneButtonBox);
 		
 		pack();
@@ -300,7 +301,7 @@ public class EditStationDialog extends JDialog {
 		setTitle(title);
 		
 		//populate songlist
-		DefaultListModel songListModel = (DefaultListModel) songList.getModel();
+		DefaultListModel<Song> songListModel = (DefaultListModel<Song>) songList.getModel();
 		for (Song song : station.getSongs()) {
 			songListModel.addElement(song);
 		}

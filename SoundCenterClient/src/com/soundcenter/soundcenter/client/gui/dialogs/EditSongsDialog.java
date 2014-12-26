@@ -4,14 +4,11 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Map.Entry;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -28,13 +25,13 @@ import com.soundcenter.soundcenter.client.gui.renderer.SongListCellRenderer;
 import com.soundcenter.soundcenter.client.util.GuiUtil;
 import com.soundcenter.soundcenter.lib.data.Song;
 
+@SuppressWarnings("serial")
 public class EditSongsDialog extends JDialog {
 	
 	public EditStationDialog parent = null;
 	
-	public JComboBox playerComboBox = new JComboBox();
-	public JList stationSongsList = new JList();
-	public JList playerSongsList = new JList();
+	public JList<Song> stationSongsList = new JList<Song>();
+	public JList<Song> availableSongList = new JList<Song>();
 	
 	public JButton addButton = new JButton("+");
 	public JButton removeButton = new JButton("-");
@@ -74,11 +71,11 @@ public class EditSongsDialog extends JDialog {
 		JScrollPane stationSongsScroller = new JScrollPane(stationSongsList);
 		stationSongsScroller.setPreferredSize(new Dimension(350, 160));
 		
-		playerSongsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		playerSongsList.setLayoutOrientation(JList.VERTICAL);
-		playerSongsList.setVisibleRowCount(-1);
-		playerSongsList.setCellRenderer(new SongListCellRenderer());
-		JScrollPane playerSongsScroller = new JScrollPane(playerSongsList);
+		availableSongList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		availableSongList.setLayoutOrientation(JList.VERTICAL);
+		availableSongList.setVisibleRowCount(-1);
+		availableSongList.setCellRenderer(new SongListCellRenderer());
+		JScrollPane playerSongsScroller = new JScrollPane(availableSongList);
 		playerSongsScroller.setPreferredSize(new Dimension(350, 160));
 		
 		
@@ -91,13 +88,7 @@ public class EditSongsDialog extends JDialog {
 			}
 		};
 		stationSongsList.getSelectionModel().addListSelectionListener(listListener);
-		playerSongsList.getSelectionModel().addListSelectionListener(listListener);
-		
-		playerComboBox.addActionListener( new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				StationsTabActions.editSongsDialogPlayerChooserSelected(dialog);
-			}
-		});
+		availableSongList.getSelectionModel().addListSelectionListener(listListener);
 		
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -164,9 +155,7 @@ public class EditSongsDialog extends JDialog {
 		pane.add(Box.createRigidArea(new Dimension(0, 10)));
 		
 		Box hBox3 = Box.createHorizontalBox();
-			hBox3.add(new JLabel("Player: "));
-			hBox3.add(playerComboBox);
-			hBox3.add(Box.createRigidArea(new Dimension(40, 0)));
+			hBox3.add(Box.createRigidArea(new Dimension(34, 0)));
 			hBox3.add(addButton);
 			hBox3.add(Box.createRigidArea(new Dimension(10, 0)));
 			hBox3.add(removeButton);
@@ -186,34 +175,21 @@ public class EditSongsDialog extends JDialog {
 		
 		Box buttonBox = Box.createHorizontalBox();
 			buttonBox.add(Box.createHorizontalGlue());
-			buttonBox.add(cancelButton);
-			buttonBox.add(Box.createRigidArea(new Dimension(20,0)));
 			buttonBox.add(applyButton);
+			buttonBox.add(Box.createRigidArea(new Dimension(20,0)));
+			buttonBox.add(cancelButton);
 		pane.add(buttonBox);
 		
 		pack();	
 		setLocationRelativeTo(parent);
 	}	
 	
-	private void loadProperties() {
-		//load playerlist
-		DefaultComboBoxModel playerChooserModel = new DefaultComboBoxModel();
-		for (Entry<String, DefaultListModel> entry : Client.database.getSongModelsMap().entrySet()) {
-			String player = entry.getKey();
-			if (player.equals(Client.userName)) {
-				playerChooserModel.insertElementAt(player, 0);
-			} else if (Client.database.permissionGranted("sc.others.use.songs")) {
-				playerChooserModel.addElement(player);
-			}
-		}	
-		playerComboBox.setModel(playerChooserModel);
-		if (playerChooserModel.getSize() > 0) {
-			playerComboBox.setSelectedIndex(0);
-		}
+	private void loadProperties() {	
+		availableSongList.setModel(Client.database.getSongModel());
 		
 		//load songs
-		DefaultListModel parentListModel = (DefaultListModel) parent.songList.getModel();
-		DefaultListModel listModel = new DefaultListModel();		
+		DefaultListModel<Song> parentListModel = (DefaultListModel<Song>) parent.songList.getModel();
+		DefaultListModel<Song> listModel = new DefaultListModel<Song>();		
 		for(int i=0; i<parentListModel.getSize(); i++) {
 			Song song = (Song) parentListModel.getElementAt(i);
 			listModel.addElement(song);
