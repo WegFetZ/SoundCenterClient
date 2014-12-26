@@ -22,19 +22,16 @@ public class Database {
 	public ConcurrentHashMap<Short, Station> biomes = new ConcurrentHashMap<Short, Station>();
 	public ConcurrentHashMap<Short, Station> worlds = new ConcurrentHashMap<Short, Station>();
 	public ConcurrentHashMap<Short, Station> wgRegions = new ConcurrentHashMap<Short, Station>();
-	public List<Song> songs = new ArrayList<Song>();
 	
-	private ConcurrentHashMap<String, DefaultListModel> areaModels = new ConcurrentHashMap<String, DefaultListModel>();
-	private ConcurrentHashMap<String, DefaultListModel> boxModels = new ConcurrentHashMap<String, DefaultListModel>();
-	private ConcurrentHashMap<String, DefaultListModel> biomeModels = new ConcurrentHashMap<String, DefaultListModel>();
-	private ConcurrentHashMap<String, DefaultListModel> worldModels = new ConcurrentHashMap<String, DefaultListModel>();
-	private ConcurrentHashMap<String, DefaultListModel> wgRegionModels = new ConcurrentHashMap<String, DefaultListModel>();
-	private ConcurrentHashMap<String, DefaultListModel> songModels = new ConcurrentHashMap<String, DefaultListModel>();
+	private ConcurrentHashMap<String, DefaultListModel<Station>> areaModels = new ConcurrentHashMap<String, DefaultListModel<Station>>();
+	private ConcurrentHashMap<String, DefaultListModel<Station>> boxModels = new ConcurrentHashMap<String, DefaultListModel<Station>>();
+	private ConcurrentHashMap<String, DefaultListModel<Station>> biomeModels = new ConcurrentHashMap<String, DefaultListModel<Station>>();
+	private ConcurrentHashMap<String, DefaultListModel<Station>> worldModels = new ConcurrentHashMap<String, DefaultListModel<Station>>();
+	private ConcurrentHashMap<String, DefaultListModel<Station>> wgRegionModels = new ConcurrentHashMap<String, DefaultListModel<Station>>();
 	
-	private DefaultListModel availableBiomesModel = new DefaultListModel();
-	private DefaultListModel availableWorldsModel = new DefaultListModel();
-	
-	private DefaultListModel songsToUploadModel = new DefaultListModel();
+	private DefaultListModel<Song> songModel = new DefaultListModel<Song>();
+	private DefaultListModel<String> availableBiomesModel = new DefaultListModel<String>();
+	private DefaultListModel<String> availableWorldsModel = new DefaultListModel<String>();
 	
 	public List<Short> mutedAreas = new ArrayList<Short>(); 
 	public List<Short> mutedBoxes = new ArrayList<Short>(); 
@@ -47,18 +44,18 @@ public class Database {
 	
 	public void addStation(Station station) {
 		ConcurrentHashMap<Short, Station> stationMap = getStationMap(station.getType());
-		ConcurrentHashMap<String, DefaultListModel> modelMap = getModelMap(station.getType());
+		ConcurrentHashMap<String, DefaultListModel<Station>> modelMap = getModelMap(station.getType());
 		
 		if (stationMap != null && modelMap != null) {
 			removeStation(station.getType(), station.getId(), false);
 			
 			stationMap.put(station.getId(), station);
-			DefaultListModel model = null;
+			DefaultListModel<Station> model = null;
 			if (modelMap.containsKey(station.getOwner())) {
 				model = modelMap.get(station.getOwner());
 				
 			} else {			
-				model = new DefaultListModel();
+				model = new DefaultListModel<Station>();
 				modelMap.put(station.getOwner(), model);
 			}
 			
@@ -113,14 +110,14 @@ public class Database {
 	
 	public void removeStation(Station station, boolean updateAvailables) {
 		ConcurrentHashMap<Short, Station> stationMap = getStationMap(station.getType());
-		ConcurrentHashMap<String, DefaultListModel> modelMap = getModelMap(station.getType());
+		ConcurrentHashMap<String, DefaultListModel<Station>> modelMap = getModelMap(station.getType());
 
 		if (stationMap != null) {
 			stationMap.remove(station.getId());
 
 		}
 		if (modelMap != null) {			
-			DefaultListModel model = null;
+			DefaultListModel<Station> model = null;
 			if (modelMap.containsKey(station.getOwner())) {
 				model = modelMap.get(station.getOwner());
 				model.removeElement(station);
@@ -170,7 +167,7 @@ public class Database {
 		}
 	}
 	
-	private ConcurrentHashMap<String, DefaultListModel> getModelMap(byte type) {
+	private ConcurrentHashMap<String, DefaultListModel<Station>> getModelMap(byte type) {
 		switch (type) {
 		case GlobalConstants.TYPE_AREA:
 			return areaModels;
@@ -188,29 +185,29 @@ public class Database {
 	}
 	
 	/* --------------------------- AREAS -------------------------- */
-	public DefaultListModel getAreaModel(String player) {
+	public DefaultListModel<Station> getAreaModel(String player) {
 		return areaModels.get(player);
 	}
 
 	
 	/* --------------------------- BOXES -------------------------- */
-	public DefaultListModel getBoxModel(String player) {
+	public DefaultListModel<Station> getBoxModel(String player) {
 		return boxModels.get(player);
 	}
 	
 	
 	/* --------------------------- WGREGIONS -------------------------- */
-	public DefaultListModel getWGRegionModel(String player) {
+	public DefaultListModel<Station> getWGRegionModel(String player) {
 		return wgRegionModels.get(player);
 	}
 	
 	
 	/* --------------------------- BIOMES -------------------------- */	
-	public DefaultListModel getBiomeModel(String player) {
+	public DefaultListModel<Station> getBiomeModel(String player) {
 		return biomeModels.get(player);
 	}
 	
-	public DefaultListModel getAvailableBiomes() {
+	public DefaultListModel<String> getAvailableBiomes() {
 		return availableBiomesModel;
 	}
 	
@@ -223,7 +220,7 @@ public class Database {
 	}
 	
 	/* --------------------------- WORLDS -------------------------- */
-	public DefaultListModel getWorldModel(String player) {
+	public DefaultListModel<Station> getWorldModel(String player) {
 		return worldModels.get(player);
 	}
 	
@@ -231,7 +228,7 @@ public class Database {
 		availableWorldsModel.addElement(world);
 	}
 	
-	public DefaultListModel getAvailableWorlds() {
+	public DefaultListModel<String> getAvailableWorlds() {
 		return availableWorldsModel;
 	}
 	
@@ -239,44 +236,43 @@ public class Database {
 		availableWorldsModel.removeElement(world);
 	}
 	
-	
-	/* --------------------------- SONGS -------------------------- */
-	public ConcurrentHashMap<String, DefaultListModel> getSongModelsMap() {
-		return songModels;
+	public boolean worldExists(String name) {
+		if (availableWorldsModel.contains(name)) {
+			return true;
+		}
+		for (Entry<Short, Station> entry : worlds.entrySet()) {
+			if (entry.getValue().getName().equalsIgnoreCase(name)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
-	public DefaultListModel getSongModel(String player) {
-		return songModels.get(player);
+	
+	/* --------------------------- SONGS -------------------------- */
+	
+	public DefaultListModel<Song> getSongModel() {
+		return songModel;
+	}
+	
+	public Song getSong(String title) {
+		Song result = null;
+		int index =  songModel.indexOf(new Song("", title, "", 0, 0));
+		if (index >= 0) {
+			result = (Song) songModel.get(index);
+		}
+		return result;
 	}
 	
 	public void addSong(Song song) {
 			
-		songs.remove(song);
-		songs.add(song);
-		
-		DefaultListModel model = null;
-		if (songModels.containsKey(song.getOwner())) {
-			model = songModels.get(song.getOwner());
-		
-		} else {			
-			model = new DefaultListModel();
-			songModels.put(song.getOwner(), model);
-		}
-		
-		model.addElement(song);
-		
-		updateMusicTab(song.getOwner(), model);
+		songModel.removeElement(song);
+		songModel.addElement(song);
 	}
 	
 	public void removeSong(Song song) {
 		
-		DefaultListModel model = null;
-		if (songModels.containsKey(song.getOwner())) {
-			model = songModels.get(song.getOwner());
-			model.removeElement(song);
-		}
-		
-		updateMusicTab(song.getOwner(), null);
+		songModel.removeElement(song);
 		
 		for (Entry<Short, Station> entry : areas.entrySet()) {
 			entry.getValue().removeSong(song);
@@ -347,10 +343,10 @@ public class Database {
 	}
 	
 	
-	public void updateStationsTab(String player, String type, DefaultListModel listModel) {
+	public void updateStationsTab(String player, String type, DefaultListModel<Station> listModel) {
 		if (listModel != null) {
-			DefaultComboBoxModel typeChooserModel = (DefaultComboBoxModel) App.gui.stationsTab.typeComboBox.getModel();
-			DefaultComboBoxModel playerChooserModel = (DefaultComboBoxModel) App.gui.stationsTab.playerComboBox.getModel();
+			DefaultComboBoxModel<String> typeChooserModel = (DefaultComboBoxModel<String>) App.gui.stationsTab.typeComboBox.getModel();
+			DefaultComboBoxModel<String> playerChooserModel = (DefaultComboBoxModel<String>) App.gui.stationsTab.playerComboBox.getModel();
 			if (playerChooserModel.getIndexOf(player) < 0) {
 				if (player.equals(Client.userName)) {
 					playerChooserModel.insertElementAt(player, 0);
@@ -369,75 +365,47 @@ public class Database {
 					&& !player.equals(Client.userName)) {
 			App.gui.stationsTab.playerComboBox.removeItem(player);
 		}
-	}
-		
-	public void updateMusicTab(String player, DefaultListModel listModel) {
-		if (listModel != null) {
-			DefaultComboBoxModel chooserModel = (DefaultComboBoxModel) App.gui.musicTab.playerComboBox.getModel();
-			if (chooserModel.getIndexOf(player) < 0) {
-				if (player.equals(Client.userName)) {
-					chooserModel.insertElementAt(player, 0);
-				} else {
-					chooserModel.addElement(player);
-				}
-			}
-			if (player.equals(Client.userName) || chooserModel.getSelectedItem() == null) {
-				chooserModel.setSelectedItem(null);
-				chooserModel.setSelectedItem(player);
-			}
-			
-		} else if (!songModels.containsKey(player) && !player.equals(Client.userName)) {
-			App.gui.musicTab.playerComboBox.removeItem(player);
-		}
-	}
+	}	
 	
 	public void reset() {
-		for (Entry<String, DefaultListModel> entry : areaModels.entrySet()) {
-			DefaultListModel model = entry.getValue();
+		for (Entry<String, DefaultListModel<Station>> entry : areaModels.entrySet()) {
+			DefaultListModel<Station> model = entry.getValue();
 			model.removeAllElements();
 		}
-		for (Entry<String, DefaultListModel> entry : boxModels.entrySet()) {
-			DefaultListModel model = entry.getValue();
+		for (Entry<String, DefaultListModel<Station>> entry : boxModels.entrySet()) {
+			DefaultListModel<Station> model = entry.getValue();
 			model.removeAllElements();
 		}
-		for (Entry<String, DefaultListModel> entry : biomeModels.entrySet()) {
-			DefaultListModel model = entry.getValue();
+		for (Entry<String, DefaultListModel<Station>> entry : biomeModels.entrySet()) {
+			DefaultListModel<Station> model = entry.getValue();
 			model.removeAllElements();
 		}
-		for (Entry<String, DefaultListModel> entry : worldModels.entrySet()) {
-			DefaultListModel model = entry.getValue();
+		for (Entry<String, DefaultListModel<Station>> entry : worldModels.entrySet()) {
+			DefaultListModel<Station> model = entry.getValue();
 			model.removeAllElements();
 		}
-		for (Entry<String, DefaultListModel> entry : wgRegionModels.entrySet()) {
-			DefaultListModel model = entry.getValue();
-			model.removeAllElements();
-		}
-		for (Entry<String, DefaultListModel> entry : songModels.entrySet()) {
-			DefaultListModel model = entry.getValue();
+		for (Entry<String, DefaultListModel<Station>> entry : wgRegionModels.entrySet()) {
+			DefaultListModel<Station> model = entry.getValue();
 			model.removeAllElements();
 		}
 		
-		availableBiomesModel.removeAllElements();
-		availableWorldsModel.removeAllElements();
-		songsToUploadModel.removeAllElements();
+		songModel.clear();
+		availableBiomesModel.clear();
+		availableWorldsModel.clear();
 		
 		areas.clear();
 		boxes.clear();
 		biomes.clear();
 		worlds.clear();
-		songs.clear();
 		areaModels.clear();
 		boxModels.clear();
 		biomeModels.clear();
 		worldModels.clear();
 		wgRegionModels.clear();
-		songModels.clear();
+		songModel.clear();
 		permissions.clear();
 		
-		DefaultComboBoxModel playerMusicModel = (DefaultComboBoxModel) App.gui.musicTab.playerComboBox.getModel();
-		DefaultComboBoxModel playerStationsModel = (DefaultComboBoxModel) App.gui.stationsTab.playerComboBox.getModel();
-		playerMusicModel.setSelectedItem(null);
-		App.gui.musicTab.playerComboBox.removeAllItems();
+		DefaultComboBoxModel<String> playerStationsModel = (DefaultComboBoxModel<String>) App.gui.stationsTab.playerComboBox.getModel();
 		playerStationsModel.setSelectedItem(null);
 		App.gui.stationsTab.playerComboBox.removeAllItems();
 	}
