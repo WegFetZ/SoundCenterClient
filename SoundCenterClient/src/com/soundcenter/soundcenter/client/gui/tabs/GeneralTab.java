@@ -16,7 +16,6 @@ import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -26,6 +25,7 @@ import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.gui.actions.GeneralTabActions;
 import com.soundcenter.soundcenter.client.util.GuiUtil;
 
+@SuppressWarnings("serial")
 public class GeneralTab extends JPanel {
 	
 	public JTextArea logArea = new JTextArea();
@@ -40,13 +40,12 @@ public class GeneralTab extends JPanel {
 	public JCheckBox debugCheckBox = new JCheckBox();
 	
 	public JButton connectButton = new JButton("Connect");
-	public JToggleButton muteMusicButton = new JToggleButton("Music active");
-	public JToggleButton muteVoiceButton = new JToggleButton("Voice active");
+	public JCheckBox stationsActiveCheckBox = new JCheckBox("Stations active");
+	public JCheckBox voiceActiveCheckBox = new JCheckBox("Voice active");
+	public JCheckBox singleSongsActiveCheckBox = new JCheckBox("Songs played with \"/sc play\" active");
 	
 	public JSlider volumeSlider = new JSlider();
 	public JLabel volumeLabel = new JLabel("100");
-	
-	public JLabel statusLabel = new JLabel("Disconnected.");
 	
 	
 	public GeneralTab() {		
@@ -72,15 +71,12 @@ public class GeneralTab extends JPanel {
 		
 		GuiUtil.setFixedSize(connectButton, new Dimension(100, 40));
 		
-		GuiUtil.setFixedSize(muteMusicButton, new Dimension(80, 20));
-		muteMusicButton.setSelected(true);
-		muteMusicButton.setBorder(null);
-		
-		GuiUtil.setFixedSize(muteVoiceButton, new Dimension(80, 20));
-		muteVoiceButton.setSelected(true);
-		muteVoiceButton.setBorder(null);
+		stationsActiveCheckBox.setSelected(true);
+		singleSongsActiveCheckBox.setSelected(true);
+		voiceActiveCheckBox.setSelected(true);
 		
 		volumeLabel.setPreferredSize(new Dimension(25,20));
+		volumeSlider.setPreferredSize(new Dimension(100,20));
 		volumeSlider.setValue(100);
 		
 		logArea.setEditable(false);
@@ -104,17 +100,22 @@ public class GeneralTab extends JPanel {
 	        }
 	    });
 
-		muteMusicButton.addActionListener(new ActionListener() {
+		stationsActiveCheckBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				GeneralTabActions.muteMusicButtonClicked();
+				GeneralTabActions.stationsActiveCheckBoxChanged();
 			}
 		});
-		
-		muteVoiceButton.addActionListener(new ActionListener() {
+		singleSongsActiveCheckBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				GeneralTabActions.muteVoiceButtonClicked();
+				GeneralTabActions.singleSongsActiveCheckBoxChanged();
+			}
+		});
+		voiceActiveCheckBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GeneralTabActions.voiceActiveCheckBoxChanged();
 			}
 		});
 		
@@ -144,22 +145,22 @@ public class GeneralTab extends JPanel {
 					hBox3.add(pluginPortField);
 				settingsBox.add(hBox3);
 				
-				settingsBox.add(Box.createRigidArea(new Dimension(0, 20)));
+				settingsBox.add(Box.createRigidArea(new Dimension(0, 10)));
 				JSeparator hseparator1 = new JSeparator(JSeparator.HORIZONTAL);
-				hseparator1.setPreferredSize(new Dimension(266, 20));
+				hseparator1.setPreferredSize(new Dimension(266, 10));
 				settingsBox.add(hseparator1);		
+				settingsBox.add(Box.createRigidArea(new Dimension(0, 10)));
 				
 				Box checkBoxBox1 = Box.createHorizontalBox();
 					checkBoxBox1.add(autoConnectCheckBox);
 					checkBoxBox1.add(Box.createHorizontalGlue());
 				settingsBox.add(checkBoxBox1);
-				settingsBox.add(Box.createRigidArea(new Dimension(0, 10)));
 				
 				Box checkBoxBox2 = Box.createHorizontalBox();
 					checkBoxBox2.add(autoReconnectCheckBox);
 					checkBoxBox2.add(Box.createHorizontalGlue());
 				settingsBox.add(checkBoxBox2);
-				settingsBox.add(Box.createRigidArea(new Dimension(0, 20)));
+				settingsBox.add(Box.createRigidArea(new Dimension(0, 10)));
 				
 				Box checkBoxBox3 = Box.createHorizontalBox();
 					checkBoxBox3.add(debugCheckBox);
@@ -172,33 +173,28 @@ public class GeneralTab extends JPanel {
 			mainBox.add(Box.createRigidArea(new Dimension(10, 0)));
 			
 			JSeparator vseparator1 = new JSeparator(JSeparator.VERTICAL);
-			vseparator1.setPreferredSize(new Dimension(15, 290));
+			vseparator1.setPreferredSize(new Dimension(15, 270));
 			mainBox.add(vseparator1);
 			
 			mainBox.add(logAreaScroller);
 		
 			
 		JSeparator hseparator2 = new JSeparator(JSeparator.HORIZONTAL);
-		hseparator2.setPreferredSize(new Dimension(776, 10));	
+		hseparator2.setPreferredSize(new Dimension(660, 2));	
 		
 		Box controlBox = Box.createHorizontalBox();
-			GuiUtil.setFixedSize(controlBox, new Dimension(Integer.MAX_VALUE, 60));
-			controlBox.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
+			controlBox.setBorder(new EmptyBorder(new Insets(5, 10, 10, 5)));
 			
-			controlBox.add(connectButton);
+			Box vBox1 = Box.createVerticalBox();
+				vBox1.add(Box.createVerticalGlue());
+				vBox1.add(connectButton);
+				vBox1.add(Box.createVerticalGlue());
+			controlBox.add(vBox1);
 			
 			controlBox.add(Box.createRigidArea(new Dimension(20,0)));
-			JSeparator vseparator2 = new JSeparator(JSeparator.VERTICAL);
-			vseparator2.setPreferredSize(new Dimension(10,60));
-			controlBox.add(vseparator2);
 			
-			controlBox.add(statusLabel);
-			
-			controlBox.add(Box.createHorizontalGlue());
-			
-			controlBox.add(Box.createRigidArea(new Dimension(10,0)));
 			JSeparator vseparator3 = new JSeparator(JSeparator.VERTICAL);
-			vseparator3.setPreferredSize(new Dimension(10,60));
+			vseparator3.setPreferredSize(new Dimension(20,60));
 			controlBox.add(vseparator3);
 						
 			Box volumeBox = Box.createVerticalBox();
@@ -215,12 +211,15 @@ public class GeneralTab extends JPanel {
 			controlBox.add(volumeBox);
 			
 			controlBox.add(Box.createRigidArea(new Dimension(20,0)));
+			controlBox.add(Box.createHorizontalGlue());
 			
-			Box muteButtonsBox = Box.createVerticalBox();
-				muteButtonsBox.add(muteMusicButton);
-				muteButtonsBox.add(Box.createRigidArea(new Dimension(0,2)));
-				muteButtonsBox.add(muteVoiceButton);
-			controlBox.add(muteButtonsBox);			
+			Box vBox2 = Box.createVerticalBox();
+				vBox2.add(stationsActiveCheckBox);
+				vBox2.add(singleSongsActiveCheckBox);
+				vBox2.add(voiceActiveCheckBox);
+				vBox2.add(Box.createVerticalGlue());
+				
+			controlBox.add(vBox2);			
 			
 		//put everything together
 		add(mainBox);

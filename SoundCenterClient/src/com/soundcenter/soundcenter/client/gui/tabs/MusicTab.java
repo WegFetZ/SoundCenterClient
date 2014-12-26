@@ -7,33 +7,32 @@ import java.awt.event.ActionListener;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
+import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.client.gui.actions.MusicTabActions;
 import com.soundcenter.soundcenter.client.gui.dialogs.AddSongDialog;
 import com.soundcenter.soundcenter.client.gui.renderer.SongListCellRenderer;
-import com.soundcenter.soundcenter.client.util.GuiUtil;
+import com.soundcenter.soundcenter.lib.data.Song;
 
+@SuppressWarnings("serial")
 public class MusicTab extends JPanel {
 	
 	public AddSongDialog addSongDialog = null;
 	
-	public JComboBox playerComboBox = new JComboBox();
-	
-	public JList songList = new JList();
+	public JList<Song> songList = new JList<Song>();
 	
 	public JButton addButton = new JButton("Add...");
 	public JButton deleteButton = new JButton("Delete");
-	public JButton playButton = new JButton("Play Globally");
+	public JButton playButton = new JButton("Play...");
+	public JButton stopButton = new JButton("Stop...");
 	
 	public MusicTab() {
 		
@@ -42,22 +41,22 @@ public class MusicTab extends JPanel {
 		songList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		songList.setLayoutOrientation(JList.VERTICAL);
 		songList.setVisibleRowCount(-1);
+		songList.setModel(Client.database.getSongModel());
 		JScrollPane musicScroller = new JScrollPane(songList);
 		musicScroller.setPreferredSize(new Dimension(450, 280));
-		musicScroller.setMinimumSize(new Dimension(200,80));;
-		
-		playerComboBox.setModel(new DefaultComboBoxModel());
-		
-		GuiUtil.setFixedSize(playerComboBox, new Dimension(150, 30));
+		musicScroller.setMinimumSize(new Dimension(200,80));
 		
 		addButton.setEnabled(false);
 		deleteButton.setEnabled(false);
 		playButton.setEnabled(false);
+		stopButton.setEnabled(false);
 		
-		//Actions
-		playerComboBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				MusicTabActions.musicChooserSelected();
+		//Actions	
+		songList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				MusicTabActions.listSelectionChanged();
 			}
 		});
 		
@@ -79,43 +78,32 @@ public class MusicTab extends JPanel {
 			}
 		});
 		
+		stopButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				MusicTabActions.stopButtonPressed(songList);
+			}
+		});
 		
 		/* build gui */		
-		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
 		
-		Box vBox1 = Box.createVerticalBox();
-			Box playerChooserBox = Box.createHorizontalBox();
-				JLabel playerLabel = new JLabel("Player:");
-				playerLabel.setPreferredSize(new Dimension(40, 30));
-				playerChooserBox.add(playerLabel);
-				playerChooserBox.add(Box.createRigidArea(new Dimension(20,0)));
-				playerChooserBox.add(playerComboBox);
-				playerChooserBox.add(Box.createHorizontalGlue());
-			vBox1.add(playerChooserBox);
-			vBox1.add(Box.createVerticalGlue());
-		add(vBox1);
+		add(musicScroller);
 		
-		add(Box.createRigidArea(new Dimension(10, 0)));
-		JSeparator vseparator1 = new JSeparator(JSeparator.VERTICAL);
-		vseparator1.setPreferredSize(new Dimension(15, 320));
-		add(vseparator1);
-		
-		Box vBox2 = Box.createVerticalBox();
-			vBox2.add(musicScroller);
-		
-			vBox2.add(Box.createRigidArea(new Dimension(0,10)));
+		add(Box.createRigidArea(new Dimension(0,10)));
 			
-			Box controlsBox = Box.createHorizontalBox();
-				controlsBox.add(addButton);
-				controlsBox.add(Box.createRigidArea(new Dimension(20, 0)));
-				controlsBox.add(deleteButton);
-				controlsBox.add(Box.createHorizontalGlue());
-				controlsBox.add(playButton);
-			vBox2.add(controlsBox);
+		Box controlsBox = Box.createHorizontalBox();
+			controlsBox.add(addButton);
+			controlsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+			controlsBox.add(deleteButton);
+			controlsBox.add(Box.createHorizontalGlue());
+			controlsBox.add(playButton);
+			controlsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+			controlsBox.add(stopButton);
+		add(controlsBox);
 			
-			vBox2.add(Box.createVerticalGlue());
-		add(vBox2);	
+		add(Box.createVerticalGlue());
+		
 	}
 
 }

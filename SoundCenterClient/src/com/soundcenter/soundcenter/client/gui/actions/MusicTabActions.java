@@ -9,8 +9,6 @@ import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import javax.swing.DefaultListModel;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -18,77 +16,115 @@ import javax.swing.JOptionPane;
 import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.client.gui.dialogs.AddSongDialog;
+import com.soundcenter.soundcenter.client.gui.dialogs.PlaySongDialog;
 import com.soundcenter.soundcenter.client.util.HttpUtil;
 import com.soundcenter.soundcenter.lib.data.Song;
 import com.soundcenter.soundcenter.lib.tcp.TcpOpcodes;
 
 public class MusicTabActions {
 
-	public static void musicChooserSelected() {
-		JComboBox playerComboBox = App.gui.musicTab.playerComboBox;
-
-		DefaultListModel model = null;
-		if (playerComboBox.getSelectedIndex() >= 0) {
-			String player = (String) playerComboBox.getSelectedItem();
-			model = Client.database.getSongModel(player);
-
-			if (model != null) {
-				App.gui.musicTab.songList.setModel(model);
-			} else {
-				App.gui.musicTab.songList.setModel(new DefaultListModel());
-			}
-
-			if (player.equals(Client.userName)) {
+	public static void tabOpened() {
+		if (Client.initialized) {
+			if (Client.database.permissionGranted("sc.add.song")) {
 				App.gui.musicTab.addButton.setEnabled(true);
-				App.gui.musicTab.deleteButton.setEnabled(true);
-			} else {
-				App.gui.musicTab.addButton.setEnabled(false);
-				if (Client.database.permissionGranted("sc.others.delete")) {
-					App.gui.musicTab.deleteButton.setEnabled(true);
-				} else {
-					App.gui.musicTab.deleteButton.setEnabled(false);
-				}
 			}
-
-			if (Client.database.permissionGranted("sc.play.global")) {
-				App.gui.musicTab.playButton.setEnabled(true);
-			} else {
-				App.gui.musicTab.playButton.setEnabled(false);
-			}
-
-		} else {
-			App.gui.musicTab.songList.setModel(new DefaultListModel());
-
-			App.gui.musicTab.addButton.setEnabled(false);
-			App.gui.musicTab.deleteButton.setEnabled(false);
-			App.gui.musicTab.playButton.setEnabled(false);
-
+			App.gui.musicTab.playButton.setEnabled(true);
+			App.gui.musicTab.stopButton.setEnabled(true);
 		}
 	}
-
+	
+	public static void listSelectionChanged() {
+		Song song = (Song) App.gui.musicTab.songList.getSelectedValue();
+		
+		if (song != null) {
+			if (song.getOwner().equalsIgnoreCase(Client.userName) 
+					|| Client.database.permissionGranted("sc.delete.others")) {
+				App.gui.musicTab.deleteButton.setEnabled(true);
+			} else {
+				App.gui.musicTab.deleteButton.setEnabled(false);
+			}
+		} else {
+			App.gui.musicTab.deleteButton.setEnabled(false);
+		}
+	}
+	
 	public static void addButtonPressed() {
 		AddSongDialog addDialog = new AddSongDialog(new JFrame());
 		addDialog.setVisible(true);
 	}
 
-	public static void deleteButtonPressed(JList songList) {
+	public static void deleteButtonPressed(JList<Song> songList) {
 		Song song = (Song) songList.getSelectedValue();
 		if (song != null) {
 			Client.tcpClient.sendPacket(TcpOpcodes.SV_DATA_CMD_DELETE_SONG, song, null);
 		}
 	}
 
-	public static void playButtonPressed(JList songList) {
-		if (App.gui.musicTab.playButton.getText().equals("Stop Globally")) {
-			Client.tcpClient.sendPacket(TcpOpcodes.SV_STREAM_CMD_STOP_GLOBAL, null, null);
-		} else {
-			Song song = (Song) songList.getSelectedValue();
-			if (song != null) {
-				Client.tcpClient.sendPacket(TcpOpcodes.SV_STREAM_CMD_PLAY_GLOBAL, song, null);
-			}
+	public static void playButtonPressed(JList<Song> songList) {
+		Song song = songList.getSelectedValue();
+		if (song != null) {
+			PlaySongDialog playDialog = new PlaySongDialog(new JFrame(), song, true);
+			playDialog.setVisible(true);
+		}
+	}
+	
+	public static void stopButtonPressed(JList<Song> songList) {
+		Song song = songList.getSelectedValue();
+		if (song != null) {
+			PlaySongDialog playDialog = new PlaySongDialog(new JFrame(), song, false);
+			playDialog.setVisible(true);
 		}
 	}
 
+	
+	/* --------------------- Play Dialog ------------------------- */
+	public static void playSongDialogRadioButtonSelected(PlaySongDialog dialog) {
+		if (dialog.worldButton.isSelected()) {
+			dialog.worldTextField.setEnabled(true);
+		} else {
+			dialog.worldTextField.setEnabled(false);
+		}
+	}
+	
+	public static void playSongDialogPlayButtonPressed(PlaySongDialog dialog, boolean play) {
+		if (dialog.selfButton.isSelected()) {
+			if (play) {
+				Client.tcpClient.sendPacket(TcpOpcodes.SV_CMD_PLAY_SONG, dialog.song, null);
+			} else {
+				Client.tcpClient.sendPacket(TcpOpcodes.SV_CMD_STOP_SONG, dialog.song, null);
+			}
+			dialog.dispose();
+			return;
+		}
+		
+		if (dialog.worldButton.isSelected()) {
+			String world = dialog.worldTextField.getText();
+			if (world.isEmpty()) {
+				JOptionPane.showMessageDialog(null, "Please enter the name of the world.", "Error", JOptionPane.OK_OPTION);
+				return;
+			}
+			if (!Client.database.worldExists(world)) {
+				JOptionPane.showMessageDialog(null, "A world with this name doesn't exist.", "Error", JOptionPane.OK_OPTION);
+				return;
+			}
+			if (play) {
+				Client.tcpClient.sendPacket(TcpOpcodes.SV_CMD_PLAY_SONG, dialog.song, world);
+			} else {
+				Client.tcpClient.sendPacket(TcpOpcodes.SV_CMD_STOP_SONG, dialog.song, world);
+			}
+			dialog.dispose();
+			return;
+		}
+		
+		if (dialog.globalButton.isSelected()) {
+			if (play) {
+				Client.tcpClient.sendPacket(TcpOpcodes.SV_CMD_PLAY_SONG, dialog.song, "/global");
+			} else {
+				Client.tcpClient.sendPacket(TcpOpcodes.SV_CMD_STOP_SONG, dialog.song, "/global");
+			}
+			dialog.dispose();
+		}
+	}
 	
 	/* ---------------------- Add Dialog ------------------------- */
 	
@@ -99,6 +135,12 @@ public class MusicTabActions {
 			JOptionPane.showMessageDialog(null, "Please enter title and URL.", "Error", JOptionPane.OK_OPTION);
 			return;
 		}
+		
+		if (Client.database.getSong(title) != null) {
+			JOptionPane.showMessageDialog(null, "A song with this title does already exist.", "Error", JOptionPane.OK_OPTION);
+			return;
+		}
+		
 		try {
 			URL url = new URL(urlString);
 			AudioFileFormat aff = AudioSystem.getAudioFileFormat(url);

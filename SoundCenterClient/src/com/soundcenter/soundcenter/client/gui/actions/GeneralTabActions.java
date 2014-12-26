@@ -1,12 +1,16 @@
 package com.soundcenter.soundcenter.client.gui.actions;
 
 import javax.swing.DefaultComboBoxModel;
+
 import com.soundcenter.soundcenter.client.App;
 import com.soundcenter.soundcenter.client.Client;
 import com.soundcenter.soundcenter.lib.tcp.TcpOpcodes;
 
 public class GeneralTabActions {
 
+	public static void tabOpened() {
+	}
+	
 	public static void connectButtonPressed() {
 		if (Client.active) {
 			Client.tcpClient.sendPacket(TcpOpcodes.SV_CON_INFO_DISCONNECT, null, null);
@@ -23,9 +27,7 @@ public class GeneralTabActions {
 				
 				//add name to player choosers
 				String name = App.gui.controller.getName();
-				DefaultComboBoxModel playerMusicModel = (DefaultComboBoxModel) App.gui.musicTab.playerComboBox.getModel();
-				DefaultComboBoxModel playerStationsModel = (DefaultComboBoxModel) App.gui.stationsTab.playerComboBox.getModel();
-				playerMusicModel.addElement(name);
+				DefaultComboBoxModel<String> playerStationsModel = (DefaultComboBoxModel<String>) App.gui.stationsTab.playerComboBox.getModel();
 				playerStationsModel.addElement(name);
 				
 				//start client
@@ -37,31 +39,34 @@ public class GeneralTabActions {
 		}
 	}
 	
-	public static void muteVoiceButtonClicked() {
-		boolean selected = App.gui.generalTab.muteVoiceButton.isSelected();
+	public static void voiceActiveCheckBoxChanged() {
+		boolean selected = App.gui.generalTab.voiceActiveCheckBox.isSelected();
 		
 		if (!selected) {
-			App.gui.generalTab.muteVoiceButton.setText("Voice muted");
 			if (Client.tcpClient != null) {
-				Client.tcpClient.sendPacket(TcpOpcodes.SV_STREAM_CMD_MUTE_VOICE, null, null);
+				Client.tcpClient.sendPacket(TcpOpcodes.SV_CMD_MUTE_VOICE, null, null);
 			}
 			App.audioManager.stopVoice();
 		} else {
-			App.gui.generalTab.muteVoiceButton.setText("Voice active");
 			if (Client.tcpClient != null) {
-				Client.tcpClient.sendPacket(TcpOpcodes.SV_STREAM_CMD_UNMUTE_VOICE, null, null);
+				Client.tcpClient.sendPacket(TcpOpcodes.SV_CMD_UNMUTE_VOICE, null, null);
 			}
 		}
 	}
 	
-	public static void muteMusicButtonClicked() {
-		boolean selected = App.gui.generalTab.muteMusicButton.isSelected();
+	public static void stationsActiveCheckBoxChanged() {
+		boolean selected = App.gui.generalTab.stationsActiveCheckBox.isSelected();
 		
 		if (!selected) {
-			App.gui.generalTab.muteMusicButton.setText("Music muted");
-			App.audioManager.stopMusic();
-		} else {
-			App.gui.generalTab.muteMusicButton.setText("Music active");
+			App.audioManager.stopStations();
+		}
+	}
+	
+	public static void singleSongsActiveCheckBoxChanged() {
+		boolean selected = App.gui.generalTab.singleSongsActiveCheckBox.isSelected();
+		
+		if (!selected) {
+			App.audioManager.stopSingleSongs();
 		}
 	}
 }

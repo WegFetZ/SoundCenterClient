@@ -32,12 +32,13 @@ public class Client {
 			return;
 		}
 		
-		App.logger.lineBreak(2);
+		if (App.gui.generalTab.logArea.getText().length()> 100) {
+			App.gui.generalTab.logArea.setText("");
+		}			
 		
 		App.gui.controller.setConnectButtonEnabled(false);
 		App.gui.controller.setConnectButtonText("Disconnect");
 		App.gui.controller.disableConnectionDataFields();
-		App.gui.controller.setConnectionStatus("Connecting...");
 		
 		reconnect = false;
 		active = true;
@@ -71,7 +72,6 @@ public class Client {
 		}
 		
 		App.gui.controller.setConnectButtonEnabled(false);
-		App.gui.controller.setConnectionStatus("Disconnecting...");
 		
 		exit = true;
 		
@@ -106,7 +106,6 @@ public class Client {
 		userName = "";
 		
 		App.gui.controller.enableConnectionDataFields();
-		App.gui.controller.setConnectionStatus("Disconnected");
 		App.gui.controller.setConnectButtonText("Connect");
 		App.gui.controller.setConnectButtonEnabled(true);
 		

@@ -10,10 +10,6 @@ public class GuiController {
 		this.mainPanel = mainPanel;
 	}
 
-	public void clearLog() {
-		mainPanel.generalTab.logArea.setText("");
-	}
-	
 	/* ------------------------ GENERAL TAB ----------------------------*/	
 	public String getName() {
 		return mainPanel.generalTab.userNameField.getText();
@@ -65,10 +61,6 @@ public class GuiController {
 		mainPanel.generalTab.connectButton.setText(text);
 	}
 	
-	public void setConnectionStatus(String text) {
-		mainPanel.generalTab.statusLabel.setText(text);
-	}
-	
 	public void setMasterVolume(byte value, boolean updateSlider) {
 		if (updateSlider) {
 			mainPanel.generalTab.volumeSlider.setValue(value);
@@ -80,28 +72,24 @@ public class GuiController {
 		return mainPanel.generalTab.volumeSlider.getValue();
 	}
 	
-	public void setMusicActive(boolean value) {
-		mainPanel.generalTab.muteMusicButton.setSelected(value);
-		if (value) {
-			mainPanel.generalTab.muteMusicButton.setText("Music active");
-		} else {
-			mainPanel.generalTab.muteMusicButton.setText("Music muted");
-		}
+	public void setStationsActive(boolean value) {
+		mainPanel.generalTab.stationsActiveCheckBox.setSelected(value);
 	}
-	public boolean isMusicActive() {
-		return mainPanel.generalTab.muteMusicButton.isSelected();
+	public boolean areStationsActive() {
+		return mainPanel.generalTab.stationsActiveCheckBox.isSelected();
+	}
+	public void setSingleSongsActive(boolean value) {
+		mainPanel.generalTab.singleSongsActiveCheckBox.setSelected(value);
+	}
+	public boolean areSingleSongsActive() {
+		return mainPanel.generalTab.singleSongsActiveCheckBox.isSelected();
 	}
 	
 	public void setVoiceActive(boolean value) {
-		mainPanel.generalTab.muteVoiceButton.setSelected(value);
-		if (value) {
-			mainPanel.generalTab.muteVoiceButton.setText("Voice active");
-		} else {
-			mainPanel.generalTab.muteVoiceButton.setText("Voice muted");
-		}
+		mainPanel.generalTab.voiceActiveCheckBox.setSelected(value);
 	}
 	public boolean isVoiceActive() {
-		return mainPanel.generalTab.muteVoiceButton.isSelected();
+		return mainPanel.generalTab.voiceActiveCheckBox.isSelected();
 	}
 	
 	public void disableConnectionDataFields() {
@@ -116,16 +104,11 @@ public class GuiController {
 		mainPanel.generalTab.pluginPortField.setEnabled(true);
 	}
 	
-	public void setPlayButtonText(String text) {
-		mainPanel.musicTab.playButton.setText(text);
-	}
-	
 	public void setLoading(boolean value) {
 		mainPanel.glassPane.setVisible(value);
 	}
 	
 	public void chooseOwnPlayer() {
-		mainPanel.musicTab.playerComboBox.setSelectedItem(getName());
 		mainPanel.stationsTab.playerComboBox.setSelectedItem(getName());
 		mainPanel.stationsTab.typeComboBox.setSelectedItem("Boxes");
 	}

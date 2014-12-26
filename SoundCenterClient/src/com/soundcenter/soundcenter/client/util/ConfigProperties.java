@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+@SuppressWarnings("serial")
 public class ConfigProperties extends Properties{
 
 	private File file;

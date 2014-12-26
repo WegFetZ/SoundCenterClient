@@ -32,8 +32,9 @@ public class Configuration {
 			App.gui.controller.setAutoReconnectActive(properties.getBoolean("Reconnect-On-Disconnect", true));
 			App.gui.controller.setDebugActive(properties.getBoolean("Debug-Mode", false));
 			App.gui.controller.setMasterVolume((byte) properties.getInteger("Master-Volume", 100), true);
-			App.gui.controller.setMusicActive(properties.getBoolean("Music-Active", true));
+			App.gui.controller.setStationsActive(properties.getBoolean("Music-Active", true));
 			App.gui.controller.setVoiceActive(properties.getBoolean("Voice-Active", true));
+			App.gui.controller.setSingleSongsActive(properties.getBoolean("SingleSongs-Active", false));
 
 		} catch (Exception e) {
 			App.logger.w("Could not load properties file:", e);
@@ -91,8 +92,9 @@ public class Configuration {
 		properties.addBoolean("Reconnect-On-Disconnect", App.gui.controller.isAutoReconnectActive());
 		properties.addBoolean("Debug-Mode", App.gui.controller.isDebugActive());
 		properties.addInteger("Master-Volume", App.gui.controller.getMasterVolume());
-		properties.addBoolean("Music-Active", App.gui.controller.isMusicActive());
+		properties.addBoolean("Music-Active", App.gui.controller.areStationsActive());
 		properties.addBoolean("Voice-Active", App.gui.controller.isVoiceActive());
+		properties.addBoolean("SingleSongs-Active", App.gui.controller.areSingleSongsActive());
 
 		try {
 			properties.save("=== SoundCenter-AudioClient configuration ===");
