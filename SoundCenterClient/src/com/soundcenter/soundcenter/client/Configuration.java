@@ -34,7 +34,7 @@ public class Configuration {
 			App.gui.controller.setMasterVolume((byte) properties.getInteger("Master-Volume", 100), true);
 			App.gui.controller.setStationsActive(properties.getBoolean("Music-Active", true));
 			App.gui.controller.setVoiceActive(properties.getBoolean("Voice-Active", true));
-			App.gui.controller.setSingleSongsActive(properties.getBoolean("SingleSongs-Active", false));
+			App.gui.controller.setSingleSongsActive(properties.getBoolean("SingleSongs-Active", true));
 
 		} catch (Exception e) {
 			App.logger.w("Could not load properties file:", e);
