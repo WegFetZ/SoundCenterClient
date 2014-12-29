@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
-
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JFrame;
@@ -32,13 +32,12 @@ public class MusicTabActions {
 			App.gui.musicTab.stopButton.setEnabled(true);
 		}
 	}
-	
+
 	public static void listSelectionChanged() {
 		Song song = (Song) App.gui.musicTab.songList.getSelectedValue();
-		
+
 		if (song != null) {
-			if (song.getOwner().equalsIgnoreCase(Client.userName) 
-					|| Client.database.permissionGranted("sc.others.delete")) {
+			if (song.getOwner().equalsIgnoreCase(Client.userName) || Client.database.permissionGranted("sc.others.delete")) {
 				App.gui.musicTab.deleteButton.setEnabled(true);
 			} else {
 				App.gui.musicTab.deleteButton.setEnabled(false);
@@ -47,7 +46,7 @@ public class MusicTabActions {
 			App.gui.musicTab.deleteButton.setEnabled(false);
 		}
 	}
-	
+
 	public static void addButtonPressed() {
 		AddSongDialog addDialog = new AddSongDialog(new JFrame());
 		addDialog.setVisible(true);
@@ -67,7 +66,7 @@ public class MusicTabActions {
 			playDialog.setVisible(true);
 		}
 	}
-	
+
 	public static void stopButtonPressed(JList<Song> songList) {
 		Song song = songList.getSelectedValue();
 		if (song != null) {
@@ -76,7 +75,6 @@ public class MusicTabActions {
 		}
 	}
 
-	
 	/* --------------------- Play Dialog ------------------------- */
 	public static void playSongDialogRadioButtonSelected(PlaySongDialog dialog) {
 		if (dialog.worldButton.isSelected()) {
@@ -85,7 +83,7 @@ public class MusicTabActions {
 			dialog.worldTextField.setEnabled(false);
 		}
 	}
-	
+
 	public static void playSongDialogPlayButtonPressed(PlaySongDialog dialog, boolean play) {
 		if (dialog.selfButton.isSelected()) {
 			if (play) {
@@ -96,7 +94,7 @@ public class MusicTabActions {
 			dialog.dispose();
 			return;
 		}
-		
+
 		if (dialog.worldButton.isSelected()) {
 			String world = dialog.worldTextField.getText();
 			if (world.isEmpty()) {
@@ -115,7 +113,7 @@ public class MusicTabActions {
 			dialog.dispose();
 			return;
 		}
-		
+
 		if (dialog.globalButton.isSelected()) {
 			if (play) {
 				Client.tcpClient.sendPacket(TcpOpcodes.SV_CMD_PLAY_SONG, dialog.song, "/global");
@@ -125,9 +123,9 @@ public class MusicTabActions {
 			dialog.dispose();
 		}
 	}
-	
+
 	/* ---------------------- Add Dialog ------------------------- */
-	
+
 	public static void addSongDialogAddButtonPressed(AddSongDialog dialog) {
 		String urlString = dialog.urlTextField.getText();
 		String title = dialog.titleTextField.getText();
@@ -135,34 +133,36 @@ public class MusicTabActions {
 			JOptionPane.showMessageDialog(null, "Please enter title and URL.", "Error", JOptionPane.OK_OPTION);
 			return;
 		}
-		
+
 		if (Client.database.getSong(title) != null) {
 			JOptionPane.showMessageDialog(null, "A song with this title does already exist.", "Error", JOptionPane.OK_OPTION);
 			return;
 		}
-		
+
 		try {
 			URL url = new URL(urlString);
-			AudioFileFormat aff = AudioSystem.getAudioFileFormat(url);
+			AudioInputStream ais = AudioSystem.getAudioInputStream(url);
+			AudioFileFormat aff = AudioSystem.getAudioFileFormat(ais);
 			AudioFormat format = aff.getFormat();
-			
+
 			long duration = -1;
 			long bytes = -1;
-			
+
 			String type = aff.getType().toString();
-			//for music files we need to know the duration and size
+			// for music files we need to know the duration and size
 			if (!dialog.radioCheckBox.isSelected()) {
-				
+
 				bytes = aff.getByteLength();
 				if (bytes == AudioSystem.NOT_SPECIFIED) {
 					bytes = HttpUtil.getFileSize(url);
 				}
-				if (bytes == -1) { //if we couldn't get the file size, the format or webswerver is unsupported
+				if (bytes == -1) { // if we couldn't get the file size, the
+									// format or webswerver is unsupported
 					throw new UnsupportedAudioFileException("Cannot get file-size information. Audio-file, or webserver unsupported.");
 				}
-				
+
 				float frameRate = format.getFrameRate();
-				//for mp3 we need to get the frame size from its properties
+				// for mp3 we need to get the frame size from its properties
 				if (type.equalsIgnoreCase("MP3")) {
 					int frameSize = -1;
 					Map<String, Object> properties = aff.properties();
@@ -170,33 +170,39 @@ public class MusicTabActions {
 						frameSize = (int) properties.get("mp3.framesize.bytes");
 					}
 					if (frameSize > 0 && bytes > 0) {
-						duration = (long) ((float)(bytes/frameSize)/frameRate)*1000;
+						duration = (long) ((float) (bytes / frameSize) / frameRate) * 1000;
 					}
-					
-				} else { //we will use #frames/fps for all other formats. if this doesn't work, the format is unsupported
+
+				} else { // we will use #frames/fps for all other formats. if
+							// this doesn't work, the format is unsupported
 					if (aff.getFrameLength() != AudioSystem.NOT_SPECIFIED && frameRate != AudioSystem.NOT_SPECIFIED) {
-						duration = (long) (aff.getFrameLength() / frameRate)*1000;
+						duration = (long) (aff.getFrameLength() / frameRate) * 1000;
 					}
 				}
 				if (duration <= 0) {
 					throw new UnsupportedAudioFileException("Cannot get framerate frame-size information.");
 				}
 			}
-			
+
 			Song song = new Song(Client.userName, title, urlString, duration, bytes);
 			song.setFormat(type);
 			Client.tcpClient.sendPacket(TcpOpcodes.SV_DATA_CMD_ADD_SONG, song, null);
-			
+
 			dialog.dispose();
-			
+
 		} catch (MalformedURLException e) {
 			JOptionPane.showMessageDialog(null, "You have entered an invalid URL.", "Error", JOptionPane.OK_OPTION);
 			App.logger.d("Cannot add song: invalid URL:", e);
 		} catch (UnsupportedAudioFileException e) {
-			JOptionPane.showMessageDialog(null, "This audioformat is not supported.", "Error", JOptionPane.OK_OPTION);
+			String help = "Please note that the url for webradio streams must directly point to a .mp3, .ogg or .wav formatted stream.";
+			if (!dialog.radioCheckBox.isSelected()) {
+				help = "Please note that only MP3 and WAV files are supported for songs.\nIf you want to add a radio stream, please select the checkbox.";
+			}
+			JOptionPane.showMessageDialog(null, "This audioformat is not supported.\n" + help, "Error", JOptionPane.OK_OPTION);
 			App.logger.d("Cannot add song: audioformat unsupported:", e);
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null, "Fie not found. You have either entered a wrong URL or lost your network connection.", "Error", JOptionPane.OK_OPTION);
+			JOptionPane.showMessageDialog(null, "Fie not found. You have either entered a wrong URL or lost your network connection.", "Error",
+					JOptionPane.OK_OPTION);
 			App.logger.d("Cannot add song: File not found. Wrong URL or lost network connection:", e);
 		}
 	}
