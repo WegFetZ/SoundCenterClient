@@ -30,11 +30,13 @@ public class Recorder implements Runnable {
 			targetLine = (TargetDataLine) AudioSystem.getLine(dataLineInfo);
 			targetLine.open(getAudioFormat(), bufferSize);
 		} catch (LineUnavailableException e) {
-			App.logger.w("Could not create recorder.", e);
+			App.logger.w("No supported microphone found.", e);
 		}
 
 		//Initialize the speex encoder
-		mEncoder.init(1, 8, 16000, 1);
+		if (!mEncoder.init(1, 8, 16000, 1)) {
+			App.logger.w("Failed to initialize speex encoder!", null);
+		}
 	}
 
 	public void run() {
@@ -86,16 +88,14 @@ public class Recorder implements Runnable {
 	}
 
 	public static AudioFormat getAudioFormat() {
-		float sampleRate = 16000.0F;
+		float sampleRate = 8000.0F;
 		//8000,11025,16000,22050,44100
 		int sampleSizeInBits = 16;
 		//8,16
 		int channels = 1;
 		//1,2
 		boolean signed = true;
-		//true,false
 		boolean bigEndian = false;
-		//true,false
 		return new AudioFormat(sampleRate, sampleSizeInBits, channels, signed, bigEndian);
 	}
 
