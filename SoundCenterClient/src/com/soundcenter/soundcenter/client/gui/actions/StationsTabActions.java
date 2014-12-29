@@ -5,6 +5,7 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 
@@ -179,25 +180,35 @@ public class StationsTabActions {
 			station = new WGRegion(oldStation.getId(), oldStation.getOwner(), oldStation.getName(), oldStation.getMin(), oldStation.getMax(), oldStation.getPoints());
 		}
 		
-		try {
-			if (type == GlobalConstants.TYPE_AREA || type == GlobalConstants.TYPE_BOX) {
+		if (type == GlobalConstants.TYPE_AREA || type == GlobalConstants.TYPE_BOX) {
+			try {
 				int range = Integer.parseInt(dialog.rangeField.getText());
+				if (range < 0) {
+					throw new NumberFormatException();
+				}
 				station.setRange(range);
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(null, "Range must be a number >= 0!", "Error", JOptionPane.OK_OPTION);
+				return;
 			}
+		}
 			
-			byte maxVolume = (byte) dialog.maxVolumeSlider.getValue();
-			station.setMaxVolume(maxVolume);
+		byte maxVolume = (byte) dialog.maxVolumeSlider.getValue();
+		station.setMaxVolume(maxVolume);
 			
+		try {
 			byte priority = (byte) Byte.parseByte(dialog.priorityField.getText());
 			if (priority < 1) {
-				priority = 1;
+				throw new NumberFormatException();
 			} else if (priority > 10) {
-				priority = 10;
+				throw new NumberFormatException();
 			}
 			station.setPriority(priority);
 		} catch (NumberFormatException e) {
-			App.logger.i("Could not edit range, priority or volume of station. Invalid integer-value.", null);
+			JOptionPane.showMessageDialog(null, "Priority must be a number between 1 and 10 (including)!", "Error", JOptionPane.OK_OPTION);
+			return;
 		}
+			
 		station.setEditableByOthers(dialog.editableByOthersCheckBox.isSelected());
 		station.setStartFromBeginning(dialog.startFromBeginningCheckBox.isSelected());
 		station.setLoop(dialog.loopCheckBox.isSelected());
