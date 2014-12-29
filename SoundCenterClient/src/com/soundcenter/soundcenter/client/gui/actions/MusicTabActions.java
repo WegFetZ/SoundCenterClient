@@ -139,6 +139,8 @@ public class MusicTabActions {
 			return;
 		}
 
+		App.gui.controller.setLoading(true);
+		
 		try {
 			URL url = new URL(urlString);
 			AudioInputStream ais = AudioSystem.getAudioInputStream(url);
@@ -164,13 +166,31 @@ public class MusicTabActions {
 				float frameRate = format.getFrameRate();
 				// for mp3 we need to get the frame size from its properties
 				if (type.equalsIgnoreCase("MP3")) {
-					int frameSize = -1;
+					int frameLength = -1;
+					int padding = 0;
+					int samplerate = -1;
+					int bitrate = 0;
+					int layer = 1;
 					Map<String, Object> properties = aff.properties();
-					if (properties.get("mp3.framesize.bytes") != null) {
-						frameSize = (int) properties.get("mp3.framesize.bytes");
+					if (properties.containsKey("mp3.version.layer")) {
+						layer = Integer.valueOf((String) properties.get("mp3.version.layer")) ;
 					}
-					if (frameSize > 0 && bytes > 0) {
-						duration = (long) ((float) (bytes / frameSize) / frameRate) * 1000;
+					if (properties.containsKey("mp3.padding") && (boolean) properties.get("mp3.padding")) {
+						padding = 1;
+					}
+					if (properties.containsKey("mp3.bitrate.nominal.bps")) {
+						bitrate = (int) properties.get("mp3.bitrate.nominal.bps") ;
+					}
+					if (properties.containsKey("mp3.frequency.hz")) {
+						samplerate = (int) properties.get("mp3.frequency.hz") ;
+					}
+					if (layer == 1) {
+						frameLength = (int) (((double)(12*bitrate)/(double)(samplerate) + padding)*4);
+					} else {
+						frameLength =  144*bitrate/samplerate + padding;	
+					}
+					if (frameLength > 0 && bytes > 0) {
+						duration = (long) ((float) (bytes / frameLength) / frameRate) * 1000;
 					}
 
 				} else { // we will use #frames/fps for all other formats. if
@@ -188,22 +208,27 @@ public class MusicTabActions {
 			song.setFormat(type);
 			Client.tcpClient.sendPacket(TcpOpcodes.SV_DATA_CMD_ADD_SONG, song, null);
 
+			App.gui.controller.setLoading(false);
 			dialog.dispose();
 
 		} catch (MalformedURLException e) {
+			App.gui.controller.setLoading(false);
 			JOptionPane.showMessageDialog(null, "You have entered an invalid URL.", "Error", JOptionPane.OK_OPTION);
 			App.logger.d("Cannot add song: invalid URL:", e);
 		} catch (UnsupportedAudioFileException e) {
-			String help = "Please note that the url for webradio streams must directly point to a .mp3, .ogg or .wav formatted stream.";
+			App.gui.controller.setLoading(false);
+			String help = "Please note that the url for webradio streams must directly point to a .mp3 or .ogg formatted stream.";
 			if (!dialog.radioCheckBox.isSelected()) {
-				help = "Please note that only MP3 and WAV files are supported for songs.\nIf you want to add a radio stream, please select the checkbox.";
+				help = "Please note that only MP3 files are supported for songs.\nIf you want to add a radio stream, please select the checkbox.";
 			}
 			JOptionPane.showMessageDialog(null, "This audioformat is not supported.\n" + help, "Error", JOptionPane.OK_OPTION);
 			App.logger.d("Cannot add song: audioformat unsupported:", e);
 		} catch (IOException e) {
+			App.gui.controller.setLoading(false);
 			JOptionPane.showMessageDialog(null, "Fie not found. You have either entered a wrong URL or lost your network connection.", "Error",
 					JOptionPane.OK_OPTION);
 			App.logger.d("Cannot add song: File not found. Wrong URL or lost network connection:", e);
 		}
 	}
+
 }
