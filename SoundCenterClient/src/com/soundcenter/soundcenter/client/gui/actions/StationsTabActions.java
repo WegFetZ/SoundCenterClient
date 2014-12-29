@@ -264,7 +264,7 @@ public class StationsTabActions {
 	}
 
 	public static void editSongsDialogRemoveButtonPressed(EditSongsDialog dialog) {
-		List<Song> songs =  dialog.availableSongList.getSelectedValuesList();
+		List<Song> songs =  dialog.stationSongsList.getSelectedValuesList();
 		if (songs != null) {
 			for (Song song: songs) {
 				DefaultListModel<Song> model = (DefaultListModel<Song>) dialog.stationSongsList.getModel();
