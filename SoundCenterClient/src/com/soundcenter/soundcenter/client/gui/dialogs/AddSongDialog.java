@@ -18,6 +18,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import com.soundcenter.soundcenter.client.gui.LoadingGlassPane;
 import com.soundcenter.soundcenter.client.gui.actions.MusicTabActions;
 
 @SuppressWarnings("serial")
@@ -28,6 +29,7 @@ public class AddSongDialog extends JDialog {
 	public JCheckBox radioCheckBox = new JCheckBox("This song is a radio-stream.");
 	public JButton addButton = new JButton("Add");
 	public JButton cancelButton = new JButton("Cancel");
+	public LoadingGlassPane glassPane = new LoadingGlassPane();
 	private JTextArea helpLabel = new JTextArea("You can add URLs to audio files on any public webserver. You can also use a filehoster like Dropbox or Google Drive to upload your music. Please don't violate copyright laws. Webradio stations will work as well, if you use an URL which is directly pointing to an audio stream in mp3 or ogg format.");
 	
 	public AddSongDialog(JFrame parent) {
@@ -45,6 +47,7 @@ public class AddSongDialog extends JDialog {
 		helpLabel.setLineWrap(true);
 		helpLabel.setWrapStyleWord(true);
 		
+		glassPane.setVisible(false);
 		
 		//Actions
 		final AddSongDialog frame = this;

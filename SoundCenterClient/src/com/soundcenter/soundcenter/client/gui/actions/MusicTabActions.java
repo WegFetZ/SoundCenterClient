@@ -139,7 +139,7 @@ public class MusicTabActions {
 			return;
 		}
 
-		App.gui.controller.setLoading(true);
+		dialog.glassPane.setVisible(true);
 		
 		try {
 			URL url = new URL(urlString);
@@ -208,7 +208,7 @@ public class MusicTabActions {
 			song.setFormat(type);
 			Client.tcpClient.sendPacket(TcpOpcodes.SV_DATA_CMD_ADD_SONG, song, null);
 
-			App.gui.controller.setLoading(false);
+			dialog.glassPane.setVisible(false);
 			dialog.dispose();
 
 		} catch (MalformedURLException e) {
@@ -216,7 +216,7 @@ public class MusicTabActions {
 			JOptionPane.showMessageDialog(null, "You have entered an invalid URL.", "Error", JOptionPane.OK_OPTION);
 			App.logger.d("Cannot add song: invalid URL:", e);
 		} catch (UnsupportedAudioFileException e) {
-			App.gui.controller.setLoading(false);
+			dialog.glassPane.setVisible(false);
 			String help = "Please note that the url for webradio streams must directly point to a .mp3 or .ogg formatted stream.";
 			if (!dialog.radioCheckBox.isSelected()) {
 				help = "Please note that only MP3 files are supported for songs.\nIf you want to add a radio stream, please select the checkbox.";
@@ -224,7 +224,7 @@ public class MusicTabActions {
 			JOptionPane.showMessageDialog(null, "This audioformat is not supported.\n" + help, "Error", JOptionPane.OK_OPTION);
 			App.logger.d("Cannot add song: audioformat unsupported:", e);
 		} catch (IOException e) {
-			App.gui.controller.setLoading(false);
+			dialog.glassPane.setVisible(false);
 			JOptionPane.showMessageDialog(null, "Fie not found. You have either entered a wrong URL or lost your network connection.", "Error",
 					JOptionPane.OK_OPTION);
 			App.logger.d("Cannot add song: File not found. Wrong URL or lost network connection:", e);
