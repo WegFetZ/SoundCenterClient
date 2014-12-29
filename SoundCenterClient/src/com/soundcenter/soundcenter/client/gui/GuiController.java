@@ -105,7 +105,7 @@ public class GuiController {
 	}
 	
 	public void setLoading(boolean value) {
-		mainPanel.glassPane.setVisible(value);
+		mainPanel.appGlassPane.setVisible(value);
 	}
 	
 	public void chooseOwnPlayer() {
