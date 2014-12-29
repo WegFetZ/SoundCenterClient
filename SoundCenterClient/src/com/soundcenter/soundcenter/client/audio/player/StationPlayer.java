@@ -40,6 +40,7 @@ public class StationPlayer extends PlayerController {
 			allowPlayback = false;
 		}
 		
+		this.oldVolume = 0;
 		App.audioManager.volumeManager.addPriority(playerPriority);
 	}
 	
@@ -150,12 +151,13 @@ public class StationPlayer extends PlayerController {
 
 					byte[] data = new byte[bufferSize];
 					numBytesRead = decodedAudioStream.read(data, 0, data.length);
-					if (!fadedIn) {// now we can fade in the volume, if not already done
-						fadeIn();
-						fadedIn = true;
-					}
-					if (numBytesRead > 0 && data != null)
+					if (numBytesRead > 0 && data != null) {
+						if (!fadedIn) {// now we can fade in the volume, if not already done
+							fadeIn();
+						}
+						
 						line.write(data, 0, data.length);
+					}
 				}
 			}
 		} catch (LineUnavailableException e) {
@@ -210,7 +212,6 @@ public class StationPlayer extends PlayerController {
 				break;
 			}
 		}
-		
 		long byteOffset = (long) (((double) songSizes[fileIndex] / (double) songDurations[fileIndex]) * restOffset);
 		return new long[] { fileIndex, byteOffset};
 	}
@@ -230,7 +231,6 @@ public class StationPlayer extends PlayerController {
 
 		//for stations we want to set the initial volume to 0
 		volumeControl.setValue((float) minGainDB);
-		this.oldVolume = 0;
 		
 		line.start();
 

@@ -116,9 +116,8 @@ public class PlayerController extends Thread {
 				float valueDB = (float) (minGainDB + (1 / cste) * Math.log(1 + (Math.exp(cste * ampGainDB) - 1) * (value / 100.0f)));
 				volumeControl.setValue(valueDB);
 			}
-
-			oldVolume = value;
 		}
+		oldVolume = value;
 	}
 
 	private void fadeVolume(final int from, final int to) {
@@ -216,6 +215,6 @@ public class PlayerController extends Thread {
 	}
 	
 	protected void fadeIn() {
-		fadeVolume(0,oldVolume); 
+		fadeVolume(0,oldVolume);
 	}
 }

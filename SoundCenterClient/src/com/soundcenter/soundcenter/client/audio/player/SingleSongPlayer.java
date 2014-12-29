@@ -23,6 +23,7 @@ public class SingleSongPlayer extends PlayerController {
 		this.singleSong = song;
 		this.playerPriority = priority;
 		
+		this.oldVolume = 100;
 		App.audioManager.volumeManager.addPriority(playerPriority);
 	}
 	
@@ -74,11 +75,13 @@ public class SingleSongPlayer extends PlayerController {
 
 					byte[] data = new byte[bufferSize];
 					numBytesRead = decodedAudioStream.read(data, 0, data.length);
-					if (!fadedIn) {// now we can fade in the volume, if not already done
-						fadeIn();
-					}
-					if (numBytesRead > 0 && data != null)
+					if (numBytesRead > 0 && data != null) {
+						if (!fadedIn) {// now we can fade in the volume, if not already done
+							fadeIn();
+						}
+						
 						line.write(data, 0, data.length);
+					}
 				}
 			}
 		} catch (LineUnavailableException e) {
@@ -112,8 +115,6 @@ public class SingleSongPlayer extends PlayerController {
 		minGainDB = volumeControl.getMinimum();
 		ampGainDB = ((10.0f / 20.0f) * volumeControl.getMaximum()) - volumeControl.getMinimum();
 		cste = Math.log(10.0) / 20;
-
-		oldVolume = 100;
 		
 		line.start();
 
