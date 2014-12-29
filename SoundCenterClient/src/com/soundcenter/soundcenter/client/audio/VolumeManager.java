@@ -42,8 +42,13 @@ public class VolumeManager {
 	private byte prioritizeVolume(byte value, int priority) {
 		byte volume = value;
 		if (audioManager.playersOverlap()) {
-			int percent = 100 - ((11-highestPriority) - (11-priority))*10;
-			volume = (byte) ( ((double) percent / 100.0) * value);
+			int percent;
+			if (priority == 10 && highestPriority == 1) {
+				percent = 0;
+			} else {
+				percent = 100 - ((11-highestPriority) - (11-priority))*10;
+			}
+			volume = (byte) (((double) percent / 100.0) * value);
 		}
 		return volume;
 	}
