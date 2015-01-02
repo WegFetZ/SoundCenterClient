@@ -32,7 +32,7 @@ public class Client {
 			return;
 		}
 		
-		if (App.gui.generalTab.logArea.getText().length()> 100) {
+		if (!reconnect && App.gui.generalTab.logArea.getText().length()> 100) {
 			App.gui.generalTab.logArea.setText("");
 		}			
 		
@@ -111,6 +111,8 @@ public class Client {
 		
 		if (!active && App.gui.controller.isAutoReconnectActive() && reconnect) {
 			if (reconnectTries < 1) {
+				//wait a second before reconnecting
+				try { Thread.sleep(1000); } catch(InterruptedException e) {}
 				App.logger.i("Reconnecting...", null);
 				GeneralTabActions.connectButtonPressed();
 				reconnectTries ++;
