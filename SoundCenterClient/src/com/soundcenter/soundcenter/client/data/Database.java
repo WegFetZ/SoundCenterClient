@@ -86,7 +86,10 @@ public class Database {
 	
 	public boolean hasStation(byte type, short id) {
 		ConcurrentHashMap<Short, Station> map = getStationMap(type);
-		return map.containsKey(id);
+		if (map != null) {
+			return map.containsKey(id);
+		}
+		return false;
 	}
 
 	public Station getStation(byte type, short id) {
