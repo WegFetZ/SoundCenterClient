@@ -35,7 +35,6 @@ public class VolumeManager {
 		byte priotizedVolume = prioritizeVolume(keepInBounds(value), controller.getPlayerPriority());
 		
 		boolean allowFade = controller.getType() != GlobalConstants.TYPE_VOICE;
-		
 		controller.setVolume(priotizedVolume, allowFade);
 	}
 	

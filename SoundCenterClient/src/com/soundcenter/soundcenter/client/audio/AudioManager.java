@@ -174,10 +174,12 @@ public class AudioManager {
 			singleSongPlayers.remove(song);
 		}
 	}
+
 	
 	private PlayerController createNewStationPlayer(byte type, short id) {
 		
-		if (!Client.database.hasStation(type, id)) {
+		//voice players are handled as stations but not as such in database
+		if (!Client.database.hasStation(type, id) && type != GlobalConstants.TYPE_VOICE) {
 			return null;
 		}
 		
@@ -201,6 +203,8 @@ public class AudioManager {
 		if (controller != null) {
 			//start the player
 			controller.start();
+		} else {
+			App.logger.d("Failed to create new player. Type: " + type + " id: " + id, null);
 		}
 		
 		return controller;
