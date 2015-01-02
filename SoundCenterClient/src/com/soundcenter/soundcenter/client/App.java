@@ -12,7 +12,7 @@ import com.soundcenter.soundcenter.client.util.SCLogger;
 
 public class App {
 
-	public static final double version = 0.303;
+	public static final double version = 0.304;
 	public static String dataFolder = "";
 	public static UserInterface gui = null;
 	public static SCLogger logger = null;
