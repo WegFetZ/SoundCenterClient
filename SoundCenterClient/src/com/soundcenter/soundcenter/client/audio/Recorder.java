@@ -88,7 +88,7 @@ public class Recorder implements Runnable {
 	}
 
 	public static AudioFormat getAudioFormat() {
-		float sampleRate = 8000.0F;
+		float sampleRate = 16000.0F;
 		//8000,11025,16000,22050,44100
 		int sampleSizeInBits = 16;
 		//8,16

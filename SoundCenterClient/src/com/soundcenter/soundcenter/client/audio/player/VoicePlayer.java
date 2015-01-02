@@ -47,9 +47,9 @@ public class VoicePlayer extends PlayerController {
 	@Override
 	public void run() {
 		this.setName("SpeexPlayer - ID: " + playerId);
-
 		init();
-
+		
+		byte[] decodedData;
 		while (line.isOpen() && !exit) {
 			try {
 
@@ -57,27 +57,22 @@ public class VoicePlayer extends PlayerController {
 
 				// quit when no packet arrives for 3 seconds
 				if (packet == null) {
-					// Applet.logger.d("Player timed out. Closing...", null);
 					break;
 				}
 
-				byte[] encodedData = packet.getStreamData();
-				speexDecoder.processData(encodedData, 0, encodedData.length);
+				speexDecoder.processData(packet.getStreamData(), 0, packet.getStreamData().length);
 
-				byte[] decodedData = new byte[speexDecoder.getProcessedDataByteSize()];
+				decodedData = new byte[speexDecoder.getProcessedDataByteSize()];
 				speexDecoder.getProcessedData(decodedData, 0);
-
 				line.write(decodedData, 0, decodedData.length);
 			} catch (StreamCorruptedException e) {
-				e.printStackTrace();
+				App.logger.w("Stream corrupted in voice player (type: " + type + " id: " + playerId + "):" , e);
 			} catch (InterruptedException e) {
 			}
 		}
 		if (!exit) {
 			close(false);
 		}
-
-		// Applet.logger.d("SpeexPlayer closed.", null);
 	}
 
 	private void init() {
@@ -99,7 +94,7 @@ public class VoicePlayer extends PlayerController {
 
 			// Applet.logger.d("SpeexPlayer SourceDataLine started!", null);
 		} catch (LineUnavailableException e) {
-			e.printStackTrace();
+			App.logger.w("Failed to create voice player (type: " + type + " id: " + playerId + "):" , e);
 			if (!exit)
 				close(false);
 		}
