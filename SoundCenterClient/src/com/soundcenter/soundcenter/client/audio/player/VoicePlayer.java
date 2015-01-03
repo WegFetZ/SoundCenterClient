@@ -46,14 +46,15 @@ public class VoicePlayer extends PlayerController {
 
 	@Override
 	public void run() {
-		this.setName("SpeexPlayer - ID: " + playerId);
+		this.setName("VoicePlayer - ID: " + playerId);
 		init();
 		
 		byte[] decodedData;
+		UdpPacket packet;
 		while (line.isOpen() && !exit) {
 			try {
-
-				UdpPacket packet = queue.poll(3L, TimeUnit.SECONDS);
+				packet = null;
+				packet = queue.poll(3L, TimeUnit.SECONDS);
 
 				// quit when no packet arrives for 3 seconds
 				if (packet == null) {
@@ -73,6 +74,7 @@ public class VoicePlayer extends PlayerController {
 		if (!exit) {
 			close(false);
 		}
+		App.logger.d("VoicePlayer closed (type: " + type + " id: " + playerId + ").", null);
 	}
 
 	private void init() {
@@ -92,7 +94,6 @@ public class VoicePlayer extends PlayerController {
 
 			line.start();
 
-			// Applet.logger.d("SpeexPlayer SourceDataLine started!", null);
 		} catch (LineUnavailableException e) {
 			App.logger.w("Failed to create voice player (type: " + type + " id: " + playerId + "):" , e);
 			if (!exit)
