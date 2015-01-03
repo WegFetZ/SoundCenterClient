@@ -63,6 +63,7 @@ public class Recorder implements Runnable {
 			}
 		}
 		stop();
+		targetLine.close();
 	}
 
 	public void start() {
@@ -79,7 +80,6 @@ public class Recorder implements Runnable {
 		record = false;
 		if (targetLine != null) {
 			targetLine.stop();
-			targetLine.close();
 		}
 	}
 	
